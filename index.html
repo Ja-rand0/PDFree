@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <title>PDF Whiteboard – Home</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+  <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
+    <h1 class="text-2xl font-bold mb-4">PDF Whiteboard</h1>
+    <p class="text-sm text-gray-600 mb-4">
+      Upload any PDF and draw freely on each page.
+    </p>
+    <input type="file" id="fileIn" accept="application/pdf"
+      class="mb-4 w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-blue-600 file:text-white hover:file:bg-blue-700" />
+    <div class="text-right">
+      <button id="upBtn" class="bg-green-600 text-white px-4 py-2 rounded">
+        Load PDF
+      </button>
+    </div>
+  </div>
+  <script>
+    document.getElementById("upBtn").addEventListener("click", async () => {
+      const file = document.getElementById("fileIn").files[0];
+      if (!file) return;
+
+      // Read the file as ArrayBuffer and store it
+      const arrayBuffer = await file.arrayBuffer();
+      const base64 = btoa(
+        String.fromCharCode(...new Uint8Array(arrayBuffer))
+      );
+      sessionStorage.setItem("pdfData", base64);
+
+      location.href = "editor.html";
+    });
+  </script>
+</body>
+
+</html>

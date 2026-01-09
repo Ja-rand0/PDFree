@@ -1,0 +1,90 @@
+/* Buttons */
+.btn {
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.2s;
+}
+
+.btn-gray {
+    background: #e5e7eb;
+    color: #1f2937;
+}
+
+.btn-gray:hover {
+    background: #d1d5db;
+}
+
+.btn-primary {
+    background: #4f46e5;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #4338ca;
+}
+
+.btn-green {
+    background: #dcfce7;
+    color: #166534;
+    font-size: 12px;
+}
+
+.btn-green:hover {
+    background: #bbf7d0;
+}
+
+.btn-red {
+    background: #fee2e2;
+    color: #991b1b;
+    font-size: 12px;
+}
+
+.btn-red:hover {
+    background: #fecaca;
+}
+
+.btn-orange {
+    background: #ffedd5;
+    color: #9a3412;
+    font-size: 12px;
+}
+
+.btn-orange:hover {
+    background: #fed7aa;
+}
+
+/* Inputs */
+input[type="color"] {
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    border: none;
+    border-radius: 4px;
+}
+
+input[type="range"] {
+    width: 128px;
+}
+
+input[type="file"] {
+    display: none;
+}
+
+.text-label {
+    font-size: 14px;
+    color: #374151;
+    margin-left: 16px;
+}
+
+/* Toolbar inline selectors (legacy) */
+.toolbar-selector {
+    display: flex;
+    gap: 8px;
+}
+
+.toolbar-selector.overflow {
+    overflow-x: auto;
+}

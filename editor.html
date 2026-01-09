@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <title>PDF Whiteboard – View & Draw</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <link rel="stylesheet" href="src/styles/base.css" />
+  <link rel="stylesheet" href="src/styles/toolbar.css" />
+  <link rel="stylesheet" href="src/styles/popups.css" />
+  <link rel="stylesheet" href="src/styles/components.css" />
+</head>
+
+<body>
+  <!-- Left Sidebar -->
+  <div id="sidebar" class="hidden">
+    <!-- Implemented Tools Section -->
+    <div class="sidebar-section">
+      <button id="selectTool" class="tool-btn" title="Select Tool">⬚</button>
+      <button id="moveTool" class="tool-btn" title="Move Tool">✋</button>
+      <button id="penTool" class="tool-btn active" title="Pen Tool">✏️</button>
+      <button id="textTool" class="tool-btn" title="Text Tool">T</button>
+      <button id="deleteTool" class="tool-btn" title="Delete Object">🗑️</button>
+      <button id="eraserTool" class="tool-btn" title="Eraser Brush">⚪</button>
+      <button id="highlightTool" class="tool-btn" title="Highlighter">🖍️</button>
+      <button id="imageTool" class="tool-btn" title="Insert Image">🖼️</button>
+      <button id="shapeTool" class="tool-btn" title="Shapes">⬟</button>
+      <!-- Shape popup selector -->
+      <div id="shapePopup" class="hidden">
+        <div class="popup-title">Select Shape</div>
+        <div class="popup-list">
+          <button id="rectangleShape" class="popup-btn popup-btn-gray">
+            <span>▭</span> Rectangle
+          </button>
+          <button id="circleShape" class="popup-btn popup-btn-gray">
+            <span>○</span> Circle
+          </button>
+          <button id="lineShape" class="popup-btn popup-btn-gray">
+            <span>─</span> Line
+          </button>
+          <button id="arrowShape" class="popup-btn popup-btn-gray">
+            <span>→</span> Arrow
+          </button>
+        </div>
+      </div>
+      <button id="signatureTool" class="tool-btn" title="Signature">✍️</button>
+      <button id="stampTool" class="tool-btn" title="Stamps">🏷️</button>
+      <!-- Stamp popup selector -->
+      <div id="stampPopup" class="hidden">
+        <div class="popup-title">Select Stamp</div>
+        <div class="popup-list">
+          <button id="stampApproved" class="popup-btn popup-btn-green">
+            <span>✓</span> APPROVED
+          </button>
+          <button id="stampRejected" class="popup-btn popup-btn-red">
+            <span>✗</span> REJECTED
+          </button>
+          <button id="stampConfidential" class="popup-btn popup-btn-red">
+            <span>🔒</span> CONFIDENTIAL
+          </button>
+          <button id="stampDraft" class="popup-btn popup-btn-gray">
+            <span>📝</span> DRAFT
+          </button>
+          <button id="stampUrgent" class="popup-btn popup-btn-orange">
+            <span>⚠️</span> URGENT
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Divider -->
+    <div class="sidebar-divider"></div>
+
+    <!-- Zoom Section -->
+    <div id="zoomControls">
+      <button id="zoomInBtn" class="tool-btn" title="Zoom In">+</button>
+      <span id="zoomTxt">100%</span>
+      <button id="zoomOutBtn" class="tool-btn" title="Zoom Out">−</button>
+    </div>
+  </div>
+
+  <!-- Toolbar -->
+  <div id="toolBar" class="hidden">
+    <button id="homeBtn" class="btn btn-gray">← Home</button>
+    <input type="file" id="switchFile" accept="application/pdf" />
+    <button id="switchBtn" class="btn btn-primary">Switch Document</button>
+
+    <!-- Shape selector -->
+    <div id="shapeSelector" class="hidden toolbar-selector">
+      <button id="rectangleShape" class="btn btn-gray">Rectangle</button>
+      <button id="circleShape" class="btn btn-gray">Circle</button>
+      <button id="lineShape" class="btn btn-gray">Line</button>
+      <button id="arrowShape" class="btn btn-gray">Arrow</button>
+    </div>
+
+    <!-- Signature mode selector -->
+    <div id="signatureSelector" class="hidden toolbar-selector">
+      <button id="drawSignature" class="btn btn-gray">Draw</button>
+      <button id="uploadSignature" class="btn btn-gray">Upload</button>
+    </div>
+
+    <!-- Stamp selector -->
+    <div id="stampSelector" class="hidden toolbar-selector overflow">
+      <button id="stampApproved" class="btn btn-green">APPROVED</button>
+      <button id="stampRejected" class="btn btn-red">REJECTED</button>
+      <button id="stampConfidential" class="btn btn-red">CONFIDENTIAL</button>
+      <button id="stampDraft" class="btn btn-gray">DRAFT</button>
+      <button id="stampUrgent" class="btn btn-orange">URGENT</button>
+    </div>
+
+    <span class="text-label">Pen:</span>
+    <input type="color" id="colorIn" value="#ff0000" />
+    <input type="range" id="widthIn" min="1" max="8" value="2" />
+    <button id="undoBtn" class="btn btn-gray">Undo</button>
+    <button id="redoBtn" class="btn btn-gray">Redo</button>
+    <button id="clearBtn" class="btn btn-gray">Clear all</button>
+  </div>
+
+  <!-- PDF Area -->
+  <div id="pdfArea" class="hidden">
+    <div id="canvasWrap"></div>
+  </div>
+
+  <script src="src/core/State.js"></script>
+  <script src="src/core/PDFLoader.js"></script>
+  <script src="src/core/EventHandler.js"></script>
+  <script src="src/ui/Toolbar.js"></script>
+  <script src="src/ui/App.js"></script>
+  <script src="src/tools/PenTool.js"></script>
+  <script src="src/tools/TextTool.js"></script>
+  <script src="src/tools/SelectTool.js"></script>
+  <script src="src/tools/MoveTool.js"></script>
+  <script src="src/tools/DeleteTool.js"></script>
+  <script src="src/tools/EraserTool.js"></script>
+  <script src="src/tools/HighlightTool.js"></script>
+  <script src="src/tools/ImageTool.js"></script>
+  <script src="src/tools/ShapeTool.js"></script>
+  <script src="src/tools/SignatureTool.js"></script>
+  <script src="src/tools/StampTool.js"></script>
+  <script src="src/tools/ZoomTool.js"></script>
+</body>
+
+</html>

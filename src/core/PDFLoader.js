@@ -1,0 +1,518 @@
+// PDF loading and rendering functions
+
+async function loadFile(url) {
+  const res = await fetch(url);
+  pdfBytes = await res.arrayBuffer();
+
+  const base64 = btoa(String.fromCharCode(...new Uint8Array(pdfBytes)));
+  sessionStorage.setItem("pdfData", base64);
+
+  strokeHistory.length = 0;
+  undoStacks.length = 0;
+  redoStacks.length = 0;
+  zoom = 1;
+
+  await renderPages();
+  document.getElementById("zoomTxt").textContent = "100%";
+}
+
+async function renderPages() {
+  if (isRendering) {
+    console.log("Already rendering, will process pending zoom after...");
+    return;
+  }
+
+  isRendering = true;
+  pendingZoom = null;
+  console.log("renderPages called, zoom:", zoom);
+
+  try {
+    const wrap = document.getElementById("canvasWrap");
+    wrap.innerHTML = "";
+    pages = [];
+
+    const base64Data = sessionStorage.getItem("pdfData");
+    if (!base64Data) {
+      console.error("No PDF data in sessionStorage");
+      return;
+    }
+    const binaryString = atob(base64Data);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+
+    const data = bytes;
+    const pdf = await pdfjsLib.getDocument({ data }).promise;
+    console.log("PDF loaded, numPages:", pdf.numPages);
+
+    for (let i = 0; i < pdf.numPages; i++) {
+      const pdfPage = await pdf.getPage(i + 1);
+      const viewport = pdfPage.getViewport({ scale: 1.5 * zoom });
+
+      const box = document.createElement("div");
+      box.className = "relative";
+
+      const pdfCanvas = document.createElement("canvas");
+      pdfCanvas.className = "pageCanvas";
+      pdfCanvas.width = viewport.width;
+      pdfCanvas.height = viewport.height;
+
+      const inkC = document.createElement("canvas");
+      inkC.width = viewport.width;
+      inkC.height = viewport.height;
+      inkC.className = "absolute top-0 left-0 z-5 inkCanvasTouch";
+
+      box.appendChild(pdfCanvas);
+      box.appendChild(inkC);
+      wrap.appendChild(box);
+
+      await pdfPage.render({
+        canvasContext: pdfCanvas.getContext("2d"),
+        viewport,
+      }).promise;
+
+      const ctx = inkC.getContext("2d");
+      pages.push({
+        inkC,
+        ctx,
+        baseWidth: viewport.width,
+        baseHeight: viewport.height,
+      });
+
+      if (!strokeHistory[i]) {
+        strokeHistory[i] = [];
+        undoStacks[i] = [];
+        redoStacks[i] = [];
+      }
+
+      redrawStrokes(ctx, i, viewport.width, viewport.height);
+      attachCanvasListeners(inkC, i);
+    }
+
+    console.log("renderPages complete, pages:", pages.length);
+  } finally {
+    isRendering = false;
+
+    if (pendingZoom !== null) {
+      console.log("Processing pending zoom:", pendingZoom);
+      zoom = pendingZoom;
+      applyZoom();
+    }
+  }
+}
+
+function redrawStrokes(ctx, pageIndex, canvasWidth, canvasHeight) {
+  ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+  const strokes = strokeHistory[pageIndex];
+  if (!strokes) return;
+
+  // Collect images to render last
+  const imageStrokes = [];
+
+  strokes.forEach((stroke) => {
+    if (stroke.type === "text") {
+      const x = stroke.x * canvasWidth;
+      const y = stroke.y * canvasHeight;
+      const fontSize = stroke.fontSize * canvasHeight;
+      const textWidth = stroke.width * canvasWidth;
+
+      ctx.font = `${fontSize}px Arial`;
+      ctx.fillStyle = stroke.color;
+      ctx.fillText(stroke.text, x, y);
+
+      const isSelected =
+        selectedText === stroke && selectedPageIndex === pageIndex;
+
+      if (isSelected) {
+        const boxX = x - 2;
+        const boxY = y - fontSize;
+        const boxW = textWidth + 4;
+        const boxH = fontSize + 7;
+        const cornerRadius = 4;
+
+        ctx.strokeStyle = "#000000";
+        ctx.lineWidth = 2;
+        ctx.setLineDash([]);
+
+        ctx.beginPath();
+        ctx.moveTo(boxX + cornerRadius, boxY);
+        ctx.lineTo(boxX + boxW - cornerRadius, boxY);
+        ctx.arcTo(
+          boxX + boxW,
+          boxY,
+          boxX + boxW,
+          boxY + cornerRadius,
+          cornerRadius
+        );
+        ctx.lineTo(boxX + boxW, boxY + boxH - cornerRadius);
+        ctx.arcTo(
+          boxX + boxW,
+          boxY + boxH,
+          boxX + boxW - cornerRadius,
+          boxY + boxH,
+          cornerRadius
+        );
+        ctx.lineTo(boxX + cornerRadius, boxY + boxH);
+        ctx.arcTo(
+          boxX,
+          boxY + boxH,
+          boxX,
+          boxY + boxH - cornerRadius,
+          cornerRadius
+        );
+        ctx.lineTo(boxX, boxY + cornerRadius);
+        ctx.arcTo(boxX, boxY, boxX + cornerRadius, boxY, cornerRadius);
+        ctx.closePath();
+        ctx.stroke();
+
+        ctx.setLineDash([]);
+
+        const handleSize = 8;
+        ctx.fillStyle = "#000000";
+
+        ctx.fillRect(
+          boxX - handleSize / 2,
+          boxY - handleSize / 2,
+          handleSize,
+          handleSize
+        );
+        ctx.fillRect(
+          boxX + boxW - handleSize / 2,
+          boxY - handleSize / 2,
+          handleSize,
+          handleSize
+        );
+        ctx.fillRect(
+          boxX - handleSize / 2,
+          boxY + boxH - handleSize / 2,
+          handleSize,
+          handleSize
+        );
+        ctx.fillRect(
+          boxX + boxW - handleSize / 2,
+          boxY + boxH - handleSize / 2,
+          handleSize,
+          handleSize
+        );
+        ctx.fillRect(
+          boxX + boxW / 2 - handleSize / 2,
+          boxY - handleSize / 2,
+          handleSize,
+          handleSize
+        );
+        ctx.fillRect(
+          boxX + boxW / 2 - handleSize / 2,
+          boxY + boxH - handleSize / 2,
+          handleSize,
+          handleSize
+        );
+        ctx.fillRect(
+          boxX - handleSize / 2,
+          boxY + boxH / 2 - handleSize / 2,
+          handleSize,
+          handleSize
+        );
+        ctx.fillRect(
+          boxX + boxW - handleSize / 2,
+          boxY + boxH / 2 - handleSize / 2,
+          handleSize,
+          handleSize
+        );
+      }
+    } else if (stroke.type === "highlight") {
+      // Draw highlight stroke with transparency
+      ctx.globalAlpha = 0.3;
+      ctx.beginPath();
+      ctx.strokeStyle = stroke.color;
+      ctx.lineWidth = stroke.width;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+
+      stroke.points.forEach((point, idx) => {
+        const x = point.x * canvasWidth;
+        const y = point.y * canvasHeight;
+
+        if (idx === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      });
+
+      ctx.stroke();
+      ctx.globalAlpha = 1.0;
+    } else if (stroke.type === "shape") {
+      // Draw shape
+      ctx.beginPath();
+      ctx.strokeStyle = stroke.color;
+      ctx.lineWidth = stroke.width;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+
+      const startX = stroke.startX * canvasWidth;
+      const startY = stroke.startY * canvasHeight;
+      const endX = stroke.endX * canvasWidth;
+      const endY = stroke.endY * canvasHeight;
+
+      if (stroke.shapeType === "rectangle") {
+        const width = endX - startX;
+        const height = endY - startY;
+        ctx.strokeRect(startX, startY, width, height);
+      } else if (stroke.shapeType === "circle") {
+        const radius = Math.sqrt((endX - startX) ** 2 + (endY - startY) ** 2);
+        ctx.arc(startX, startY, radius, 0, Math.PI * 2);
+        ctx.stroke();
+      } else if (stroke.shapeType === "line") {
+        ctx.moveTo(startX, startY);
+        ctx.lineTo(endX, endY);
+        ctx.stroke();
+      } else if (stroke.shapeType === "arrow") {
+        // Draw line
+        ctx.moveTo(startX, startY);
+        ctx.lineTo(endX, endY);
+        ctx.stroke();
+
+        // Draw arrowhead
+        const angle = Math.atan2(endY - startY, endX - startX);
+        const arrowLength = 15;
+        const arrowAngle = Math.PI / 6;
+
+        ctx.beginPath();
+        ctx.moveTo(endX, endY);
+        ctx.lineTo(
+          endX - arrowLength * Math.cos(angle - arrowAngle),
+          endY - arrowLength * Math.sin(angle - arrowAngle)
+        );
+        ctx.moveTo(endX, endY);
+        ctx.lineTo(
+          endX - arrowLength * Math.cos(angle + arrowAngle),
+          endY - arrowLength * Math.sin(angle + arrowAngle)
+        );
+        ctx.stroke();
+      }
+    } else if (stroke.type === "signature") {
+      // Draw signature (same as pen stroke)
+      ctx.beginPath();
+      ctx.strokeStyle = stroke.color;
+      ctx.lineWidth = stroke.width;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+
+      stroke.points.forEach((point, idx) => {
+        const x = point.x * canvasWidth;
+        const y = point.y * canvasHeight;
+
+        if (idx === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      });
+
+      ctx.stroke();
+    } else if (stroke.type === "signature-image") {
+      // Draw signature image (same as regular image)
+      if (stroke.imgObject) {
+        const x = stroke.x * canvasWidth;
+        const y = stroke.y * canvasHeight;
+        const width = stroke.width * canvasWidth;
+        const height = stroke.height * canvasHeight;
+
+        ctx.save();
+        ctx.globalCompositeOperation = "source-over";
+        ctx.drawImage(stroke.imgObject, x, y, width, height);
+        ctx.restore();
+      } else {
+        const img = new Image();
+        img.onload = () => {
+          const x = stroke.x * canvasWidth;
+          const y = stroke.y * canvasHeight;
+          const width = stroke.width * canvasWidth;
+          const height = stroke.height * canvasHeight;
+
+          ctx.save();
+          ctx.globalCompositeOperation = "source-over";
+          ctx.drawImage(img, x, y, width, height);
+          ctx.restore();
+
+          stroke.imgObject = img;
+        };
+        img.src = stroke.dataUrl;
+      }
+    } else if (stroke.type === "stamp") {
+      // Draw stamp
+      const x = stroke.x * canvasWidth;
+      const y = stroke.y * canvasHeight;
+      const fontSize = stroke.fontSize * canvasHeight;
+
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate((stroke.rotation * Math.PI) / 180);
+
+      // Draw border box
+      ctx.font = `bold ${fontSize}px Arial`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+
+      const textMetrics = ctx.measureText(stroke.text);
+      const textWidth = textMetrics.width;
+      const padding = 10;
+
+      ctx.strokeStyle = stroke.color;
+      ctx.lineWidth = 3;
+      ctx.strokeRect(
+        -textWidth / 2 - padding,
+        -fontSize / 2 - padding,
+        textWidth + padding * 2,
+        fontSize + padding * 2
+      );
+
+      // Draw text
+      ctx.fillStyle = stroke.color;
+      ctx.fillText(stroke.text, 0, 0);
+
+      ctx.restore();
+    } else if (stroke.type === "image") {
+      // Draw image synchronously using pre-loaded object
+      if (stroke.imgObject) {
+        // Image already loaded - draw immediately
+        const x = stroke.x * canvasWidth;
+        const y = stroke.y * canvasHeight;
+        const width = stroke.width * canvasWidth;
+        const height = stroke.height * canvasHeight;
+
+        ctx.save();
+        ctx.globalCompositeOperation = "source-over";
+        ctx.drawImage(stroke.imgObject, x, y, width, height);
+        ctx.restore();
+
+        // Draw selection box if selected
+        const isSelected =
+          selectedImage === stroke && selectedPageIndex === pageIndex;
+        if (isSelected) {
+          const cornerRadius = 4;
+
+          ctx.strokeStyle = "#000000";
+          ctx.lineWidth = 2;
+          ctx.setLineDash([]);
+
+          // Draw rounded rectangle border
+          ctx.beginPath();
+          ctx.moveTo(x + cornerRadius, y);
+          ctx.lineTo(x + width - cornerRadius, y);
+          ctx.arcTo(x + width, y, x + width, y + cornerRadius, cornerRadius);
+          ctx.lineTo(x + width, y + height - cornerRadius);
+          ctx.arcTo(
+            x + width,
+            y + height,
+            x + width - cornerRadius,
+            y + height,
+            cornerRadius
+          );
+          ctx.lineTo(x + cornerRadius, y + height);
+          ctx.arcTo(x, y + height, x, y + height - cornerRadius, cornerRadius);
+          ctx.lineTo(x, y + cornerRadius);
+          ctx.arcTo(x, y, x + cornerRadius, y, cornerRadius);
+          ctx.closePath();
+          ctx.stroke();
+
+          // Draw resize handles
+          const handleSize = 8;
+          ctx.fillStyle = "#000000";
+
+          // Corner handles
+          ctx.fillRect(
+            x - handleSize / 2,
+            y - handleSize / 2,
+            handleSize,
+            handleSize
+          );
+          ctx.fillRect(
+            x + width - handleSize / 2,
+            y - handleSize / 2,
+            handleSize,
+            handleSize
+          );
+          ctx.fillRect(
+            x - handleSize / 2,
+            y + height - handleSize / 2,
+            handleSize,
+            handleSize
+          );
+          ctx.fillRect(
+            x + width - handleSize / 2,
+            y + height - handleSize / 2,
+            handleSize,
+            handleSize
+          );
+
+          // Edge handles
+          ctx.fillRect(
+            x + width / 2 - handleSize / 2,
+            y - handleSize / 2,
+            handleSize,
+            handleSize
+          );
+          ctx.fillRect(
+            x + width / 2 - handleSize / 2,
+            y + height - handleSize / 2,
+            handleSize,
+            handleSize
+          );
+          ctx.fillRect(
+            x - handleSize / 2,
+            y + height / 2 - handleSize / 2,
+            handleSize,
+            handleSize
+          );
+          ctx.fillRect(
+            x + width - handleSize / 2,
+            y + height / 2 - handleSize / 2,
+            handleSize,
+            handleSize
+          );
+        }
+      } else {
+        // Fallback: load image if not pre-loaded (for undo/redo)
+        const img = new Image();
+        img.onload = () => {
+          const x = stroke.x * canvasWidth;
+          const y = stroke.y * canvasHeight;
+          const width = stroke.width * canvasWidth;
+          const height = stroke.height * canvasHeight;
+
+          ctx.save();
+          ctx.globalCompositeOperation = "source-over";
+          ctx.drawImage(img, x, y, width, height);
+          ctx.restore();
+
+          // Store for future renders
+          stroke.imgObject = img;
+        };
+        img.src = stroke.dataUrl;
+      }
+    } else {
+      // Draw pen stroke
+      ctx.beginPath();
+      ctx.strokeStyle = stroke.color;
+      ctx.lineWidth = stroke.width;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+
+      stroke.points.forEach((point, idx) => {
+        const x = point.x * canvasWidth;
+        const y = point.y * canvasHeight;
+
+        if (idx === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      });
+
+      ctx.stroke();
+    }
+  });
+}
