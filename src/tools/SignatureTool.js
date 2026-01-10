@@ -13,22 +13,21 @@ function initSignatureModal() {
 
   // Create modal overlay
   signatureModal = document.createElement("div");
-  signatureModal.className =
-    "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden";
+  signatureModal.className = "hidden";
   signatureModal.id = "signatureModal";
 
   // Create modal content
   const modalContent = document.createElement("div");
-  modalContent.className = "bg-white rounded-lg p-6 shadow-xl";
+  modalContent.className = "signature-modal-content";
   modalContent.innerHTML = `
-    <h3 class="text-lg font-semibold mb-4">Draw Your Signature</h3>
-    <div class="border-2 border-gray-300 rounded-lg overflow-hidden mb-4">
-      <canvas id="signatureCanvas" width="400" height="200" class="bg-white cursor-crosshair"></canvas>
+    <h3 class="signature-modal-title">Draw Your Signature</h3>
+    <div class="signature-canvas-container">
+      <canvas id="signatureCanvas" width="400" height="200"></canvas>
     </div>
-    <div class="flex gap-3 justify-end">
-      <button id="signatureClear" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md transition">Clear</button>
-      <button id="signatureClose" class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-md transition">Close</button>
-      <button id="signatureDone" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition">Done</button>
+    <div class="signature-modal-buttons">
+      <button id="signatureClear" class="signature-btn signature-btn-clear">Clear</button>
+      <button id="signatureClose" class="signature-btn signature-btn-close">Close</button>
+      <button id="signatureDone" class="signature-btn signature-btn-done">Done</button>
     </div>
   `;
 

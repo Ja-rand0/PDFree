@@ -2,10 +2,11 @@
 #shapePopup,
 #stampPopup {
     position: fixed;
+    display: flex !important;
+    flex-direction: column;
     min-width: 150px;
     pointer-events: auto;
     left: 70px;
-    top: 200px;
     z-index: 9999;
     background: white;
     border-radius: 8px;
@@ -14,9 +15,9 @@
     padding: 12px;
 }
 
-#shapePopup:not(.hidden),
-#stampPopup:not(.hidden) {
-    display: block !important;
+#shapePopup.hidden,
+#stampPopup.hidden {
+    display: none !important;
 }
 
 /* Speech bubble arrows */

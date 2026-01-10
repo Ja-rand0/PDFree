@@ -264,6 +264,15 @@ function initToolbar() {
     console.log("Popup top set to:", shapePopup.style.top);
     shapePopup.classList.remove("hidden");
     console.log("Popup classList:", shapePopup.classList.toString());
+    console.log(
+      "Computed display:",
+      window.getComputedStyle(shapePopup).display
+    );
+    console.log(
+      "Computed visibility:",
+      window.getComputedStyle(shapePopup).visibility
+    );
+    console.log("Popup offsetWidth:", shapePopup.offsetWidth);
   });
 
   document.getElementById("shapeTool").addEventListener("mouseleave", (e) => {

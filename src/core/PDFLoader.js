@@ -61,7 +61,7 @@ async function renderPages() {
       const inkC = document.createElement("canvas");
       inkC.width = viewport.width;
       inkC.height = viewport.height;
-      inkC.className = "absolute top-0 left-0 z-5 inkCanvasTouch";
+      inkC.className = "inkCanvasTouch";
 
       box.appendChild(pdfCanvas);
       box.appendChild(inkC);
@@ -292,6 +292,91 @@ function redrawStrokes(ctx, pageIndex, canvasWidth, canvasHeight) {
         );
         ctx.stroke();
       }
+
+      // Draw selection box if selected
+      const isSelected =
+        selectedShape === stroke && selectedPageIndex === pageIndex;
+      if (isSelected) {
+        let left, top, width, height;
+
+        if (stroke.shapeType === "circle") {
+          // For circles, calculate bounding box from radius
+          const radius = Math.sqrt((endX - startX) ** 2 + (endY - startY) ** 2);
+          left = startX - radius;
+          top = startY - radius;
+          width = radius * 2;
+          height = radius * 2;
+        } else {
+          // For other shapes, use min/max of start and end points
+          left = Math.min(startX, endX);
+          top = Math.min(startY, endY);
+          width = Math.abs(endX - startX);
+          height = Math.abs(endY - startY);
+        }
+
+        // Draw dashed border
+        ctx.strokeStyle = "#000000";
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 5]);
+        ctx.strokeRect(left - 5, top - 5, width + 10, height + 10);
+        ctx.setLineDash([]);
+
+        // Draw resize handles (8 corner and edge handles)
+        const handleSize = 8;
+        ctx.fillStyle = "#000000";
+
+        // Corners
+        ctx.fillRect(
+          left - 5 - handleSize / 2,
+          top - 5 - handleSize / 2,
+          handleSize,
+          handleSize
+        ); // TL
+        ctx.fillRect(
+          left + width + 5 - handleSize / 2,
+          top - 5 - handleSize / 2,
+          handleSize,
+          handleSize
+        ); // TR
+        ctx.fillRect(
+          left - 5 - handleSize / 2,
+          top + height + 5 - handleSize / 2,
+          handleSize,
+          handleSize
+        ); // BL
+        ctx.fillRect(
+          left + width + 5 - handleSize / 2,
+          top + height + 5 - handleSize / 2,
+          handleSize,
+          handleSize
+        ); // BR
+
+        // Edges
+        ctx.fillRect(
+          left + width / 2 - handleSize / 2,
+          top - 5 - handleSize / 2,
+          handleSize,
+          handleSize
+        ); // Top
+        ctx.fillRect(
+          left + width / 2 - handleSize / 2,
+          top + height + 5 - handleSize / 2,
+          handleSize,
+          handleSize
+        ); // Bottom
+        ctx.fillRect(
+          left - 5 - handleSize / 2,
+          top + height / 2 - handleSize / 2,
+          handleSize,
+          handleSize
+        ); // Left
+        ctx.fillRect(
+          left + width + 5 - handleSize / 2,
+          top + height / 2 - handleSize / 2,
+          handleSize,
+          handleSize
+        ); // Right
+      }
     } else if (stroke.type === "signature") {
       // Draw signature (same as pen stroke)
       ctx.beginPath();
@@ -324,6 +409,17 @@ function redrawStrokes(ctx, pageIndex, canvasWidth, canvasHeight) {
         ctx.globalCompositeOperation = "source-over";
         ctx.drawImage(stroke.imgObject, x, y, width, height);
         ctx.restore();
+
+        // Draw selection box if selected
+        const isSelected =
+          selectedSignature === stroke && selectedPageIndex === pageIndex;
+        if (isSelected) {
+          ctx.strokeStyle = "#000000";
+          ctx.lineWidth = 2;
+          ctx.setLineDash([5, 5]);
+          ctx.strokeRect(x - 5, y - 5, width + 10, height + 10);
+          ctx.setLineDash([]);
+        }
       } else {
         const img = new Image();
         img.onload = () => {
@@ -374,6 +470,22 @@ function redrawStrokes(ctx, pageIndex, canvasWidth, canvasHeight) {
       ctx.fillText(stroke.text, 0, 0);
 
       ctx.restore();
+
+      // Draw selection box if selected
+      const isSelected =
+        selectedStamp === stroke && selectedPageIndex === pageIndex;
+      if (isSelected) {
+        ctx.strokeStyle = "#000000";
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 5]);
+        ctx.strokeRect(
+          x - 10,
+          y - 10,
+          stroke.width * canvasWidth + 20,
+          stroke.height * canvasHeight + 20
+        );
+        ctx.setLineDash([]);
+      }
     } else if (stroke.type === "image") {
       // Draw image synchronously using pre-loaded object
       if (stroke.imgObject) {
@@ -513,6 +625,91 @@ function redrawStrokes(ctx, pageIndex, canvasWidth, canvasHeight) {
       });
 
       ctx.stroke();
+
+      // Draw selection box if selected
+      const isSelected =
+        selectedStroke === stroke && selectedPageIndex === pageIndex;
+      if (isSelected && stroke.points && stroke.points.length > 0) {
+        // Calculate bounding box from all points
+        let minX = Infinity,
+          minY = Infinity,
+          maxX = -Infinity,
+          maxY = -Infinity;
+        stroke.points.forEach((point) => {
+          const px = point.x * canvasWidth;
+          const py = point.y * canvasHeight;
+          minX = Math.min(minX, px);
+          minY = Math.min(minY, py);
+          maxX = Math.max(maxX, px);
+          maxY = Math.max(maxY, py);
+        });
+
+        const width = maxX - minX;
+        const height = maxY - minY;
+
+        // Draw dashed border
+        ctx.strokeStyle = "#000000";
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 5]);
+        ctx.strokeRect(minX - 5, minY - 5, width + 10, height + 10);
+        ctx.setLineDash([]);
+
+        // Draw resize handles (8 corner and edge handles)
+        const handleSize = 8;
+        ctx.fillStyle = "#000000";
+
+        // Corners
+        ctx.fillRect(
+          minX - 5 - handleSize / 2,
+          minY - 5 - handleSize / 2,
+          handleSize,
+          handleSize
+        ); // TL
+        ctx.fillRect(
+          maxX + 5 - handleSize / 2,
+          minY - 5 - handleSize / 2,
+          handleSize,
+          handleSize
+        ); // TR
+        ctx.fillRect(
+          minX - 5 - handleSize / 2,
+          maxY + 5 - handleSize / 2,
+          handleSize,
+          handleSize
+        ); // BL
+        ctx.fillRect(
+          maxX + 5 - handleSize / 2,
+          maxY + 5 - handleSize / 2,
+          handleSize,
+          handleSize
+        ); // BR
+
+        // Edges
+        ctx.fillRect(
+          minX + width / 2 - handleSize / 2,
+          minY - 5 - handleSize / 2,
+          handleSize,
+          handleSize
+        ); // Top
+        ctx.fillRect(
+          minX + width / 2 - handleSize / 2,
+          maxY + 5 - handleSize / 2,
+          handleSize,
+          handleSize
+        ); // Bottom
+        ctx.fillRect(
+          minX - 5 - handleSize / 2,
+          minY + height / 2 - handleSize / 2,
+          handleSize,
+          handleSize
+        ); // Left
+        ctx.fillRect(
+          maxX + 5 - handleSize / 2,
+          minY + height / 2 - handleSize / 2,
+          handleSize,
+          handleSize
+        ); // Right
+      }
     }
   });
 }
