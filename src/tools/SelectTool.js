@@ -1,4 +1,4 @@
-// Select tool functionality - select and resize text and images
+// Select tool functionality - select and resize text, images, shapes, and signatures
 
 function getHandleAtPosition(x, y, textStroke, canvas) {
   if (!textStroke) return null;
@@ -86,6 +86,56 @@ function getImageHandleAtPosition(x, y, imageStroke, canvas) {
   if (
     Math.abs(x - (imgX + imgWidth)) < hitArea &&
     Math.abs(y - (imgY + imgHeight / 2)) < hitArea
+  )
+    return "r";
+
+  return null;
+}
+
+function getSignatureHandleAtPosition(x, y, signatureStroke, canvas) {
+  if (!signatureStroke) return null;
+
+  const sigX = signatureStroke.x * canvas.width;
+  const sigY = signatureStroke.y * canvas.height;
+  const sigWidth = signatureStroke.width * canvas.width;
+  const sigHeight = signatureStroke.height * canvas.height;
+
+  const hitArea = 80;
+
+  // Corner handles
+  if (Math.abs(x - sigX) < hitArea && Math.abs(y - sigY) < hitArea) return "tl";
+  if (Math.abs(x - (sigX + sigWidth)) < hitArea && Math.abs(y - sigY) < hitArea)
+    return "tr";
+  if (
+    Math.abs(x - sigX) < hitArea &&
+    Math.abs(y - (sigY + sigHeight)) < hitArea
+  )
+    return "bl";
+  if (
+    Math.abs(x - (sigX + sigWidth)) < hitArea &&
+    Math.abs(y - (sigY + sigHeight)) < hitArea
+  )
+    return "br";
+
+  // Edge handles
+  if (
+    Math.abs(x - (sigX + sigWidth / 2)) < hitArea &&
+    Math.abs(y - sigY) < hitArea
+  )
+    return "t";
+  if (
+    Math.abs(x - (sigX + sigWidth / 2)) < hitArea &&
+    Math.abs(y - (sigY + sigHeight)) < hitArea
+  )
+    return "b";
+  if (
+    Math.abs(x - sigX) < hitArea &&
+    Math.abs(y - (sigY + sigHeight / 2)) < hitArea
+  )
+    return "l";
+  if (
+    Math.abs(x - (sigX + sigWidth)) < hitArea &&
+    Math.abs(y - (sigY + sigHeight / 2)) < hitArea
   )
     return "r";
 
@@ -305,6 +355,30 @@ function handleSelectStart(e, canvas, pageIndex) {
     }
   }
 
+  // Handle signature selection and resizing
+  if (selectedSignature === clickedSignature && clickedSignature) {
+    const handle = getSignatureHandleAtPosition(
+      p.x,
+      p.y,
+      selectedSignature,
+      canvas
+    );
+
+    if (handle) {
+      return {
+        resizing: true,
+        resizeHandle: handle,
+        dragStartPos: p,
+        originalSignatureProps: {
+          x: selectedSignature.x,
+          y: selectedSignature.y,
+          width: selectedSignature.width,
+          height: selectedSignature.height,
+        },
+      };
+    }
+  }
+
   // Handle shape selection and resizing
   if (selectedShape === clickedShape && clickedShape) {
     const handle = getShapeHandleAtPosition(p.x, p.y, selectedShape, canvas);
@@ -481,6 +555,68 @@ function handleSelectMove(e, canvas, pageIndex, state) {
     return state;
   }
 
+  // Handle signature resizing (same as image)
+  if (state.resizing && selectedSignature && state.originalSignatureProps) {
+    const p = getCanvasPosition(e, canvas);
+    const dx = (p.x - state.dragStartPos.x) / canvas.width;
+    const dy = (p.y - state.dragStartPos.y) / canvas.height;
+
+    const handle = state.resizeHandle;
+    let newX = state.originalSignatureProps.x;
+    let newY = state.originalSignatureProps.y;
+    let newWidth = state.originalSignatureProps.width;
+    let newHeight = state.originalSignatureProps.height;
+
+    // Calculate aspect ratio
+    const aspectRatio =
+      state.originalSignatureProps.width / state.originalSignatureProps.height;
+
+    // Handle corner resizing (maintain aspect ratio)
+    if (handle === "br") {
+      newWidth = state.originalSignatureProps.width + dx;
+      newHeight = newWidth / aspectRatio;
+    } else if (handle === "bl") {
+      newWidth = state.originalSignatureProps.width - dx;
+      newHeight = newWidth / aspectRatio;
+      newX = state.originalSignatureProps.x + dx;
+    } else if (handle === "tr") {
+      newWidth = state.originalSignatureProps.width + dx;
+      newHeight = newWidth / aspectRatio;
+      newY = state.originalSignatureProps.y + dy;
+    } else if (handle === "tl") {
+      newWidth = state.originalSignatureProps.width - dx;
+      newHeight = newWidth / aspectRatio;
+      newX = state.originalSignatureProps.x + dx;
+      newY =
+        state.originalSignatureProps.y +
+        (state.originalSignatureProps.height - newHeight);
+    }
+    // Handle edge resizing (free form)
+    else if (handle === "r") {
+      newWidth = state.originalSignatureProps.width + dx;
+    } else if (handle === "l") {
+      newWidth = state.originalSignatureProps.width - dx;
+      newX = state.originalSignatureProps.x + dx;
+    } else if (handle === "b") {
+      newHeight = state.originalSignatureProps.height + dy;
+    } else if (handle === "t") {
+      newHeight = state.originalSignatureProps.height - dy;
+      newY = state.originalSignatureProps.y + dy;
+    }
+
+    // Set minimum size
+    const minSize = 20 / canvas.width;
+    if (newWidth > minSize && newHeight > minSize) {
+      selectedSignature.x = newX;
+      selectedSignature.y = newY;
+      selectedSignature.width = newWidth;
+      selectedSignature.height = newHeight;
+    }
+
+    redrawStrokes(ctx, pageIndex, canvas.width, canvas.height);
+    return state;
+  }
+
   // Handle shape resizing
   if (state.resizing && selectedShape && state.originalShapeProps) {
     const p = getCanvasPosition(e, canvas);
@@ -599,5 +735,6 @@ function handleSelectStop(state) {
     originalImageProps: null,
     originalShapeProps: null,
     originalStrokeProps: null,
+    originalSignatureProps: null,
   };
 }

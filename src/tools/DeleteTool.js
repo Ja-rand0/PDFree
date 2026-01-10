@@ -71,6 +71,38 @@ function handleDeleteClick(e, canvas, pageIndex) {
     return;
   }
 
+  // Check if clicking on signature
+  const clickedSignature = checkSignatureClick(
+    pageIndex,
+    p.x,
+    p.y,
+    canvas.width,
+    canvas.height
+  );
+
+  if (clickedSignature) {
+    const idx = strokeHistory[pageIndex].indexOf(clickedSignature);
+    if (idx > -1) {
+      const deletedStroke = strokeHistory[pageIndex].splice(idx, 1)[0];
+      undoStacks[pageIndex].push({ type: "delete", stroke: deletedStroke });
+      redoStacks[pageIndex].length = 0;
+
+      if (selectedSignature === clickedSignature) {
+        selectedSignature = null;
+        selectedPageIndex = null;
+      }
+
+      redrawStrokes(
+        canvas.getContext("2d"),
+        pageIndex,
+        canvas.width,
+        canvas.height
+      );
+      console.log("Deleted signature");
+    }
+    return;
+  }
+
   // Check if clicking on pen stroke
   const clickedStroke = checkStrokeClick(
     pageIndex,
@@ -161,37 +193,6 @@ function handleDeleteClick(e, canvas, pageIndex) {
       console.log("Deleted stamp");
     }
     return;
-  }
-
-  // Check if clicking on signature
-  const clickedSignature = checkSignatureClick(
-    pageIndex,
-    p.x,
-    p.y,
-    canvas.width,
-    canvas.height
-  );
-
-  if (clickedSignature) {
-    const idx = strokeHistory[pageIndex].indexOf(clickedSignature);
-    if (idx > -1) {
-      const deletedStroke = strokeHistory[pageIndex].splice(idx, 1)[0];
-      undoStacks[pageIndex].push({ type: "delete", stroke: deletedStroke });
-      redoStacks[pageIndex].length = 0;
-
-      if (selectedSignature === clickedSignature) {
-        selectedSignature = null;
-        selectedPageIndex = null;
-      }
-
-      redrawStrokes(
-        canvas.getContext("2d"),
-        pageIndex,
-        canvas.width,
-        canvas.height
-      );
-      console.log("Deleted signature");
-    }
   }
 }
 
