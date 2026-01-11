@@ -32,6 +32,16 @@ function handleStampClick(e, canvas, pageIndex) {
   const normalizedX = p.x / canvas.width;
   const normalizedY = p.y / canvas.height;
 
+  // Calculate stamp dimensions for hit detection
+  const ctx = canvas.getContext("2d");
+  const fontSize = 0.03 * canvas.height;
+  ctx.font = `bold ${fontSize}px Arial`;
+  const textMetrics = ctx.measureText(stamp.text);
+  const textWidth = textMetrics.width;
+  const padding = 10;
+  const stampWidth = (textWidth + padding * 2) / canvas.width;
+  const stampHeight = (fontSize + padding * 2) / canvas.height;
+
   // Create stamp stroke
   const stampStroke = {
     type: "stamp",
@@ -42,6 +52,8 @@ function handleStampClick(e, canvas, pageIndex) {
     x: normalizedX,
     y: normalizedY,
     fontSize: 0.03, // Normalized font size (will scale with canvas)
+    width: stampWidth,
+    height: stampHeight,
   };
 
   strokeHistory[pageIndex].push(stampStroke);

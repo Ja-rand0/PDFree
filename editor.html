@@ -118,6 +118,7 @@
     <button id="undoBtn" class="btn btn-gray">Undo</button>
     <button id="redoBtn" class="btn btn-gray">Redo</button>
     <button id="clearBtn" class="btn btn-gray">Clear all</button>
+    <button id="savePdfBtn" class="btn btn-green">Save PDF</button>
   </div>
 
   <!-- PDF Area -->
@@ -125,8 +126,10 @@
     <div id="canvasWrap"></div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
   <script src="src/core/State.js"></script>
   <script src="src/core/PDFLoader.js"></script>
+  <script src="src/core/SavePDF.js"></script>
   <script src="src/core/EventHandler.js"></script>
   <script src="src/ui/Toolbar.js"></script>
   <script src="src/ui/App.js"></script>

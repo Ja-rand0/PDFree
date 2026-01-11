@@ -84,6 +84,33 @@ function eraseAtPoint(pageIndex, x, y, radius, canvasWidth, canvasHeight) {
     // Skip text objects (use delete tool for those)
     if (stroke.type === "text") continue;
 
+    // Handle stamps - erase entirely when touched
+    if (stroke.type === "stamp") {
+      const stampX = stroke.x * canvasWidth;
+      const stampY = stroke.y * canvasHeight;
+      const stampWidth = stroke.width * canvasWidth;
+      const stampHeight = stroke.height * canvasHeight;
+
+      // Stamps are centered
+      const left = stampX - stampWidth / 2;
+      const right = stampX + stampWidth / 2;
+      const top = stampY - stampHeight / 2;
+      const bottom = stampY + stampHeight / 2;
+
+      // Check if eraser touches stamp
+      const closestX = Math.max(left, Math.min(x, right));
+      const closestY = Math.max(top, Math.min(y, bottom));
+      const distance = Math.sqrt((x - closestX) ** 2 + (y - closestY) ** 2);
+
+      if (distance <= radius) {
+        const deletedStroke = strokeHistory[pageIndex].splice(i, 1)[0];
+        undoStacks[pageIndex].push({ type: "erase", stroke: deletedStroke });
+        redoStacks[pageIndex].length = 0;
+        console.log("Stamp erased");
+      }
+      continue;
+    }
+
     // Handle shapes - convert to points and split like pen strokes
     if (stroke.type === "shape") {
       // Convert shape to points based on type

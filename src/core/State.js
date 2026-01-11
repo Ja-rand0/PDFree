@@ -81,12 +81,13 @@ function checkStampClick(pageIndex, x, y, canvasWidth, canvasHeight) {
       const stampWidth = stroke.width * canvasWidth;
       const stampHeight = stroke.height * canvasHeight;
 
-      if (
-        x >= stampX &&
-        x <= stampX + stampWidth &&
-        y >= stampY &&
-        y <= stampY + stampHeight
-      ) {
+      // Stamps are centered at x,y
+      const left = stampX - stampWidth / 2;
+      const right = stampX + stampWidth / 2;
+      const top = stampY - stampHeight / 2;
+      const bottom = stampY + stampHeight / 2;
+
+      if (x >= left && x <= right && y >= top && y <= bottom) {
         return stroke;
       }
     }

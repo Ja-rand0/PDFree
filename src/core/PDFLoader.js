@@ -377,12 +377,8 @@ function redrawStrokes(ctx, pageIndex, canvasWidth, canvasHeight) {
           handleSize
         ); // Right
       }
-    // Add this code to your redrawStrokes function in PDFLoader.js
-// Place it BEFORE the "else if (stroke.type === 'signature-image')" section
-// This replaces the old signature-image rendering
-
     } else if (stroke.type === "signature") {
-      // Draw signature as vector path (same as pen stroke)
+      // Draw signature (same as pen stroke)
       ctx.beginPath();
       ctx.strokeStyle = stroke.color;
       ctx.lineWidth = stroke.width;
@@ -401,91 +397,6 @@ function redrawStrokes(ctx, pageIndex, canvasWidth, canvasHeight) {
       });
 
       ctx.stroke();
-
-      // Draw selection box if selected
-      const isSelected =
-        selectedSignature === stroke && selectedPageIndex === pageIndex;
-      if (isSelected && stroke.points && stroke.points.length > 0) {
-        // Calculate bounding box from all points
-        let minX = Infinity,
-          minY = Infinity,
-          maxX = -Infinity,
-          maxY = -Infinity;
-        stroke.points.forEach((point) => {
-          const px = point.x * canvasWidth;
-          const py = point.y * canvasHeight;
-          minX = Math.min(minX, px);
-          minY = Math.min(minY, py);
-          maxX = Math.max(maxX, px);
-          maxY = Math.max(maxY, py);
-        });
-
-        const width = maxX - minX;
-        const height = maxY - minY;
-
-        // Draw dashed border
-        ctx.strokeStyle = "#000000";
-        ctx.lineWidth = 2;
-        ctx.setLineDash([5, 5]);
-        ctx.strokeRect(minX - 5, minY - 5, width + 10, height + 10);
-        ctx.setLineDash([]);
-
-        // Draw resize handles (8 corner and edge handles)
-        const handleSize = 8;
-        ctx.fillStyle = "#000000";
-
-        // Corners
-        ctx.fillRect(
-          minX - 5 - handleSize / 2,
-          minY - 5 - handleSize / 2,
-          handleSize,
-          handleSize
-        ); // TL
-        ctx.fillRect(
-          maxX + 5 - handleSize / 2,
-          minY - 5 - handleSize / 2,
-          handleSize,
-          handleSize
-        ); // TR
-        ctx.fillRect(
-          minX - 5 - handleSize / 2,
-          maxY + 5 - handleSize / 2,
-          handleSize,
-          handleSize
-        ); // BL
-        ctx.fillRect(
-          maxX + 5 - handleSize / 2,
-          maxY + 5 - handleSize / 2,
-          handleSize,
-          handleSize
-        ); // BR
-
-        // Edges
-        ctx.fillRect(
-          minX + width / 2 - handleSize / 2,
-          minY - 5 - handleSize / 2,
-          handleSize,
-          handleSize
-        ); // Top
-        ctx.fillRect(
-          minX + width / 2 - handleSize / 2,
-          maxY + 5 - handleSize / 2,
-          handleSize,
-          handleSize
-        ); // Bottom
-        ctx.fillRect(
-          minX - 5 - handleSize / 2,
-          minY + height / 2 - handleSize / 2,
-          handleSize,
-          handleSize
-        ); // Left
-        ctx.fillRect(
-          maxX + 5 - handleSize / 2,
-          minY + height / 2 - handleSize / 2,
-          handleSize,
-          handleSize
-        ); // Right
-      }
     } else if (stroke.type === "signature-image") {
       // Draw signature image (same as regular image)
       if (stroke.imgObject) {
@@ -564,15 +475,17 @@ function redrawStrokes(ctx, pageIndex, canvasWidth, canvasHeight) {
       const isSelected =
         selectedStamp === stroke && selectedPageIndex === pageIndex;
       if (isSelected) {
+        const stampWidth = stroke.width * canvasWidth;
+        const stampHeight = stroke.height * canvasHeight;
+
+        // Stamps are centered at x,y
+        const left = x - stampWidth / 2;
+        const top = y - stampHeight / 2;
+
         ctx.strokeStyle = "#000000";
         ctx.lineWidth = 2;
         ctx.setLineDash([5, 5]);
-        ctx.strokeRect(
-          x - 10,
-          y - 10,
-          stroke.width * canvasWidth + 20,
-          stroke.height * canvasHeight + 20
-        );
+        ctx.strokeRect(left - 5, top - 5, stampWidth + 10, stampHeight + 10);
         ctx.setLineDash([]);
       }
     } else if (stroke.type === "image") {

@@ -254,6 +254,12 @@ function initToolbar() {
     });
   });
 
+  // Save PDF button
+  document.getElementById("savePdfBtn").addEventListener("click", () => {
+    console.log("Save PDF button clicked");
+    savePDF();
+  });
+
   // Shape tool - show popup on hover
   document.getElementById("shapeTool").addEventListener("mouseenter", (e) => {
     const shapePopup = document.getElementById("shapePopup");
@@ -273,6 +279,10 @@ function initToolbar() {
       window.getComputedStyle(shapePopup).visibility
     );
     console.log("Popup offsetWidth:", shapePopup.offsetWidth);
+    console.log(
+      "Popup getBoundingClientRect:",
+      shapePopup.getBoundingClientRect()
+    );
   });
 
   document.getElementById("shapeTool").addEventListener("mouseleave", (e) => {
