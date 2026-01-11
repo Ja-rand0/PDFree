@@ -1,7 +1,7 @@
 // Highlight tool functionality - semi-transparent marker for highlighting
 
 const highlightColors = {
-  yellow: "rgba(255, 255, 0, 0.3)",
+  yellow: "rgba(255, 255, 0, 0.6)",
   green: "rgba(0, 255, 0, 0.3)",
   blue: "rgba(0, 150, 255, 0.3)",
   pink: "rgba(255, 0, 255, 0.3)",

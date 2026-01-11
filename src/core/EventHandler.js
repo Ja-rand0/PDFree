@@ -98,7 +98,13 @@ function attachCanvasListeners(canvas, pageIndex) {
   }
 
   function move(e) {
-    if (currentTool === "select" && toolState.resizing) {
+    if (
+      currentTool === "select" &&
+      (toolState.resizing ||
+        toolState.resizingMultiple ||
+        toolState.mode === "dragBox" ||
+        toolState.mode === "movingMultiple")
+    ) {
       toolState = handleSelectMove(e, canvas, pageIndex, toolState);
       return;
     }
@@ -129,8 +135,13 @@ function attachCanvasListeners(canvas, pageIndex) {
   }
 
   function stop() {
-    if (toolState.resizing) {
-      toolState = handleSelectStop(toolState);
+    if (
+      toolState.resizing ||
+      toolState.resizingMultiple ||
+      toolState.mode === "dragBox" ||
+      toolState.mode === "movingMultiple"
+    ) {
+      toolState = handleSelectStop(canvas, pageIndex, toolState);
       return;
     }
 

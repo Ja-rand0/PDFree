@@ -15,6 +15,7 @@ let pdfBytes,
   selectedStamp = null,
   selectedSignature = null,
   selectedStroke = null,
+  selectedObjects = [], // Array for multi-select
   selectedPageIndex = null;
 
 // Store strokes as vector data
@@ -130,11 +131,14 @@ function checkPenStrokeClick(pageIndex, x, y, canvasWidth, canvasHeight) {
   // Check in reverse order (most recent first)
   for (let i = strokes.length - 1; i >= 0; i--) {
     const stroke = strokes[i];
-    if (
-      (stroke.type === "pen" || stroke.type === "highlight") &&
-      stroke.points &&
-      stroke.points.length > 0
-    ) {
+
+    // Check if this is a pen/highlight stroke (has points but no specific type, or type is pen/highlight)
+    if (stroke.points && stroke.points.length > 0) {
+      // Skip if it's a different type with points (like signature drawings)
+      if (stroke.type && stroke.type !== "pen" && stroke.type !== "highlight") {
+        continue;
+      }
+
       // Check if click is near any point in the stroke
       const hitDistance = 20; // pixels
 

@@ -1,274 +1,195 @@
-// Select tool functionality - select and resize text, images, shapes, and signatures
+// Select tool functionality - select and resize objects with multi-select support
 
-function getHandleAtPosition(x, y, textStroke, canvas) {
-  if (!textStroke) return null;
-
-  const textX = textStroke.x * canvas.width;
-  const textY = textStroke.y * canvas.height;
-  const fontSize = textStroke.fontSize * canvas.height;
-  const textWidth = textStroke.width * canvas.width;
-
-  const boxX = textX - 2;
-  const boxY = textY - fontSize;
-  const boxW = textWidth + 4;
-  const boxH = fontSize + 7;
+// ========== HANDLE DETECTION FUNCTIONS ==========
+function getHandleAtPosition(x, y, obj, canvas) {
+  if (!obj) return null;
   const hitArea = 80;
 
-  if (Math.abs(x - boxX) < hitArea && Math.abs(y - boxY) < hitArea) return "tl";
-  if (Math.abs(x - (boxX + boxW)) < hitArea && Math.abs(y - boxY) < hitArea)
-    return "tr";
-  if (Math.abs(x - boxX) < hitArea && Math.abs(y - (boxY + boxH)) < hitArea)
-    return "bl";
-  if (
-    Math.abs(x - (boxX + boxW)) < hitArea &&
-    Math.abs(y - (boxY + boxH)) < hitArea
-  )
-    return "br";
-  if (Math.abs(x - (boxX + boxW / 2)) < hitArea && Math.abs(y - boxY) < hitArea)
-    return "t";
-  if (
-    Math.abs(x - (boxX + boxW / 2)) < hitArea &&
-    Math.abs(y - (boxY + boxH)) < hitArea
-  )
-    return "b";
-  if (Math.abs(x - boxX) < hitArea && Math.abs(y - (boxY + boxH / 2)) < hitArea)
-    return "l";
-  if (
-    Math.abs(x - (boxX + boxW)) < hitArea &&
-    Math.abs(y - (boxY + boxH / 2)) < hitArea
-  )
-    return "r";
-
-  return null;
-}
-
-function getImageHandleAtPosition(x, y, imageStroke, canvas) {
-  if (!imageStroke) return null;
-
-  const imgX = imageStroke.x * canvas.width;
-  const imgY = imageStroke.y * canvas.height;
-  const imgWidth = imageStroke.width * canvas.width;
-  const imgHeight = imageStroke.height * canvas.height;
-
-  const hitArea = 80;
-
-  // Corner handles
-  if (Math.abs(x - imgX) < hitArea && Math.abs(y - imgY) < hitArea) return "tl";
-  if (Math.abs(x - (imgX + imgWidth)) < hitArea && Math.abs(y - imgY) < hitArea)
-    return "tr";
-  if (
-    Math.abs(x - imgX) < hitArea &&
-    Math.abs(y - (imgY + imgHeight)) < hitArea
-  )
-    return "bl";
-  if (
-    Math.abs(x - (imgX + imgWidth)) < hitArea &&
-    Math.abs(y - (imgY + imgHeight)) < hitArea
-  )
-    return "br";
-
-  // Edge handles
-  if (
-    Math.abs(x - (imgX + imgWidth / 2)) < hitArea &&
-    Math.abs(y - imgY) < hitArea
-  )
-    return "t";
-  if (
-    Math.abs(x - (imgX + imgWidth / 2)) < hitArea &&
-    Math.abs(y - (imgY + imgHeight)) < hitArea
-  )
-    return "b";
-  if (
-    Math.abs(x - imgX) < hitArea &&
-    Math.abs(y - (imgY + imgHeight / 2)) < hitArea
-  )
-    return "l";
-  if (
-    Math.abs(x - (imgX + imgWidth)) < hitArea &&
-    Math.abs(y - (imgY + imgHeight / 2)) < hitArea
-  )
-    return "r";
-
-  return null;
-}
-
-function getSignatureHandleAtPosition(x, y, signatureStroke, canvas) {
-  if (!signatureStroke) return null;
-
-  const sigX = signatureStroke.x * canvas.width;
-  const sigY = signatureStroke.y * canvas.height;
-  const sigWidth = signatureStroke.width * canvas.width;
-  const sigHeight = signatureStroke.height * canvas.height;
-
-  const hitArea = 80;
-
-  // Corner handles
-  if (Math.abs(x - sigX) < hitArea && Math.abs(y - sigY) < hitArea) return "tl";
-  if (Math.abs(x - (sigX + sigWidth)) < hitArea && Math.abs(y - sigY) < hitArea)
-    return "tr";
-  if (
-    Math.abs(x - sigX) < hitArea &&
-    Math.abs(y - (sigY + sigHeight)) < hitArea
-  )
-    return "bl";
-  if (
-    Math.abs(x - (sigX + sigWidth)) < hitArea &&
-    Math.abs(y - (sigY + sigHeight)) < hitArea
-  )
-    return "br";
-
-  // Edge handles
-  if (
-    Math.abs(x - (sigX + sigWidth / 2)) < hitArea &&
-    Math.abs(y - sigY) < hitArea
-  )
-    return "t";
-  if (
-    Math.abs(x - (sigX + sigWidth / 2)) < hitArea &&
-    Math.abs(y - (sigY + sigHeight)) < hitArea
-  )
-    return "b";
-  if (
-    Math.abs(x - sigX) < hitArea &&
-    Math.abs(y - (sigY + sigHeight / 2)) < hitArea
-  )
-    return "l";
-  if (
-    Math.abs(x - (sigX + sigWidth)) < hitArea &&
-    Math.abs(y - (sigY + sigHeight / 2)) < hitArea
-  )
-    return "r";
-
-  return null;
-}
-
-function getShapeHandleAtPosition(x, y, shapeStroke, canvas) {
-  if (!shapeStroke) return null;
-
-  const startX = shapeStroke.startX * canvas.width;
-  const startY = shapeStroke.startY * canvas.height;
-  const endX = shapeStroke.endX * canvas.width;
-  const endY = shapeStroke.endY * canvas.height;
-
+  // Get bounding box based on object type
   let left, top, width, height;
 
-  if (shapeStroke.shapeType === "circle") {
-    const radius = Math.sqrt((endX - startX) ** 2 + (endY - startY) ** 2);
-    left = startX - radius;
-    top = startY - radius;
-    width = radius * 2;
-    height = radius * 2;
+  if (obj.type === "text") {
+    const textX = obj.x * canvas.width;
+    const textY = obj.y * canvas.height;
+    const fontSize = obj.fontSize * canvas.height;
+    const textWidth = obj.width * canvas.width;
+    left = textX - 2;
+    top = textY - fontSize;
+    width = textWidth + 4;
+    height = fontSize + 7;
+  } else if (obj.type === "image" || obj.type === "signature-image") {
+    left = obj.x * canvas.width;
+    top = obj.y * canvas.height;
+    width = obj.width * canvas.width;
+    height = obj.height * canvas.height;
+  } else if (obj.type === "stamp") {
+    const x = obj.x * canvas.width;
+    const y = obj.y * canvas.height;
+    const w = obj.width * canvas.width;
+    const h = obj.height * canvas.height;
+    left = x - w / 2 - 5;
+    top = y - h / 2 - 5;
+    width = w + 10;
+    height = h + 10;
+  } else if (obj.type === "shape") {
+    const startX = obj.startX * canvas.width;
+    const startY = obj.startY * canvas.height;
+    const endX = obj.endX * canvas.width;
+    const endY = obj.endY * canvas.height;
+    if (obj.shapeType === "circle") {
+      const radius = Math.sqrt((endX - startX) ** 2 + (endY - startY) ** 2);
+      left = startX - radius - 5;
+      top = startY - radius - 5;
+      width = radius * 2 + 10;
+      height = radius * 2 + 10;
+    } else {
+      left = Math.min(startX, endX) - 5;
+      top = Math.min(startY, endY) - 5;
+      width = Math.abs(endX - startX) + 10;
+      height = Math.abs(endY - startY) + 10;
+    }
+  } else if (obj.points && obj.points.length > 0) {
+    // Handle pen strokes (may not have a type property)
+    let minX = Infinity,
+      minY = Infinity,
+      maxX = -Infinity,
+      maxY = -Infinity;
+    obj.points.forEach((pt) => {
+      const px = pt.x * canvas.width;
+      const py = pt.y * canvas.height;
+      minX = Math.min(minX, px);
+      minY = Math.min(minY, py);
+      maxX = Math.max(maxX, px);
+      maxY = Math.max(maxY, py);
+    });
+    left = minX - 5;
+    top = minY - 5;
+    width = maxX - minX + 10;
+    height = maxY - minY + 10;
   } else {
-    left = Math.min(startX, endX);
-    top = Math.min(startY, endY);
-    width = Math.abs(endX - startX);
-    height = Math.abs(endY - startY);
+    return null;
   }
 
-  const hitArea = 80;
-
-  // Corner handles
-  if (Math.abs(x - (left - 5)) < hitArea && Math.abs(y - (top - 5)) < hitArea)
-    return "tl";
-  if (
-    Math.abs(x - (left + width + 5)) < hitArea &&
-    Math.abs(y - (top - 5)) < hitArea
-  )
+  // Check all 8 handles
+  if (Math.abs(x - left) < hitArea && Math.abs(y - top) < hitArea) return "tl";
+  if (Math.abs(x - (left + width)) < hitArea && Math.abs(y - top) < hitArea)
     return "tr";
-  if (
-    Math.abs(x - (left - 5)) < hitArea &&
-    Math.abs(y - (top + height + 5)) < hitArea
-  )
+  if (Math.abs(x - left) < hitArea && Math.abs(y - (top + height)) < hitArea)
     return "bl";
   if (
-    Math.abs(x - (left + width + 5)) < hitArea &&
-    Math.abs(y - (top + height + 5)) < hitArea
+    Math.abs(x - (left + width)) < hitArea &&
+    Math.abs(y - (top + height)) < hitArea
   )
     return "br";
-
-  // Edge handles
-  if (
-    Math.abs(x - (left + width / 2)) < hitArea &&
-    Math.abs(y - (top - 5)) < hitArea
-  )
+  if (Math.abs(x - (left + width / 2)) < hitArea && Math.abs(y - top) < hitArea)
     return "t";
   if (
     Math.abs(x - (left + width / 2)) < hitArea &&
-    Math.abs(y - (top + height + 5)) < hitArea
+    Math.abs(y - (top + height)) < hitArea
   )
     return "b";
   if (
-    Math.abs(x - (left - 5)) < hitArea &&
+    Math.abs(x - left) < hitArea &&
     Math.abs(y - (top + height / 2)) < hitArea
   )
     return "l";
   if (
-    Math.abs(x - (left + width + 5)) < hitArea &&
+    Math.abs(x - (left + width)) < hitArea &&
     Math.abs(y - (top + height / 2)) < hitArea
   )
     return "r";
-
   return null;
 }
 
-function getPenStrokeHandleAtPosition(x, y, stroke, canvas) {
-  if (!stroke || !stroke.points || stroke.points.length === 0) return null;
-
-  // Calculate bounding box
-  let minX = Infinity,
-    minY = Infinity,
-    maxX = -Infinity,
-    maxY = -Infinity;
-  stroke.points.forEach((point) => {
-    const px = point.x * canvas.width;
-    const py = point.y * canvas.height;
-    minX = Math.min(minX, px);
-    minY = Math.min(minY, py);
-    maxX = Math.max(maxX, px);
-    maxY = Math.max(maxY, py);
-  });
-
-  const width = maxX - minX;
-  const height = maxY - minY;
-  const hitArea = 80;
-
-  // Corner handles
-  if (Math.abs(x - (minX - 5)) < hitArea && Math.abs(y - (minY - 5)) < hitArea)
-    return "tl";
-  if (Math.abs(x - (maxX + 5)) < hitArea && Math.abs(y - (minY - 5)) < hitArea)
-    return "tr";
-  if (Math.abs(x - (minX - 5)) < hitArea && Math.abs(y - (maxY + 5)) < hitArea)
-    return "bl";
-  if (Math.abs(x - (maxX + 5)) < hitArea && Math.abs(y - (maxY + 5)) < hitArea)
-    return "br";
-
-  // Edge handles
-  if (
-    Math.abs(x - (minX + width / 2)) < hitArea &&
-    Math.abs(y - (minY - 5)) < hitArea
-  )
-    return "t";
-  if (
-    Math.abs(x - (minX + width / 2)) < hitArea &&
-    Math.abs(y - (maxY + 5)) < hitArea
-  )
-    return "b";
-  if (
-    Math.abs(x - (minX - 5)) < hitArea &&
-    Math.abs(y - (minY + height / 2)) < hitArea
-  )
-    return "l";
-  if (
-    Math.abs(x - (maxX + 5)) < hitArea &&
-    Math.abs(y - (minY + height / 2)) < hitArea
-  )
-    return "r";
-
+function getObjectBounds(obj, canvas) {
+  if (!obj) return null;
+  if (obj.type === "text") {
+    const x = obj.x * canvas.width;
+    const y = obj.y * canvas.height;
+    const fontSize = obj.fontSize * canvas.height;
+    const width = obj.width * canvas.width;
+    return { left: x, top: y - fontSize, right: x + width, bottom: y };
+  } else if (obj.type === "image" || obj.type === "signature-image") {
+    const x = obj.x * canvas.width;
+    const y = obj.y * canvas.height;
+    return {
+      left: x,
+      top: y,
+      right: x + obj.width * canvas.width,
+      bottom: y + obj.height * canvas.height,
+    };
+  } else if (obj.type === "shape") {
+    const startX = obj.startX * canvas.width;
+    const startY = obj.startY * canvas.height;
+    const endX = obj.endX * canvas.width;
+    const endY = obj.endY * canvas.height;
+    if (obj.shapeType === "circle") {
+      const radius = Math.sqrt((endX - startX) ** 2 + (endY - startY) ** 2);
+      return {
+        left: startX - radius,
+        top: startY - radius,
+        right: startX + radius,
+        bottom: startY + radius,
+      };
+    }
+    return {
+      left: Math.min(startX, endX),
+      top: Math.min(startY, endY),
+      right: Math.max(startX, endX),
+      bottom: Math.max(startY, endY),
+    };
+  } else if (obj.type === "stamp") {
+    const x = obj.x * canvas.width;
+    const y = obj.y * canvas.height;
+    const w = obj.width * canvas.width;
+    const h = obj.height * canvas.height;
+    return {
+      left: x - w / 2,
+      top: y - h / 2,
+      right: x + w / 2,
+      bottom: y + h / 2,
+    };
+  } else if (obj.points && obj.points.length > 0) {
+    // Handle pen strokes and highlights (may not have a type property, or type is "pen"/"highlight")
+    let minX = Infinity,
+      minY = Infinity,
+      maxX = -Infinity,
+      maxY = -Infinity;
+    obj.points.forEach((pt) => {
+      const px = pt.x * canvas.width;
+      const py = pt.y * canvas.height;
+      minX = Math.min(minX, px);
+      minY = Math.min(minY, py);
+      maxX = Math.max(maxX, px);
+      maxY = Math.max(maxY, py);
+    });
+    return { left: minX, top: minY, right: maxX, bottom: maxY };
+  }
   return null;
 }
 
+function isObjectInSelectionBox(
+  obj,
+  boxLeft,
+  boxTop,
+  boxRight,
+  boxBottom,
+  canvas
+) {
+  const bounds = getObjectBounds(obj, canvas);
+  if (!bounds) return false;
+  return !(
+    bounds.right < boxLeft ||
+    bounds.left > boxRight ||
+    bounds.bottom < boxTop ||
+    bounds.top > boxBottom
+  );
+}
+
+// ========== MAIN SELECT FUNCTIONS ==========
 function handleSelectStart(e, canvas, pageIndex) {
   const p = getCanvasPosition(e, canvas);
+
   const clickedText = checkTextClick(
     pageIndex,
     p.x,
@@ -276,7 +197,6 @@ function handleSelectStart(e, canvas, pageIndex) {
     canvas.width,
     canvas.height
   );
-
   const clickedImage = checkImageClick(
     pageIndex,
     p.x,
@@ -284,7 +204,6 @@ function handleSelectStart(e, canvas, pageIndex) {
     canvas.width,
     canvas.height
   );
-
   const clickedShape = checkShapeClick(
     pageIndex,
     p.x,
@@ -292,7 +211,6 @@ function handleSelectStart(e, canvas, pageIndex) {
     canvas.width,
     canvas.height
   );
-
   const clickedStamp = checkStampClick(
     pageIndex,
     p.x,
@@ -300,7 +218,6 @@ function handleSelectStart(e, canvas, pageIndex) {
     canvas.width,
     canvas.height
   );
-
   const clickedSignature = checkSignatureClick(
     pageIndex,
     p.x,
@@ -308,7 +225,6 @@ function handleSelectStart(e, canvas, pageIndex) {
     canvas.width,
     canvas.height
   );
-
   const clickedPenStroke = checkPenStrokeClick(
     pageIndex,
     p.x,
@@ -316,118 +232,84 @@ function handleSelectStart(e, canvas, pageIndex) {
     canvas.width,
     canvas.height
   );
+  const clickedObject =
+    clickedText ||
+    clickedImage ||
+    clickedShape ||
+    clickedStamp ||
+    clickedSignature ||
+    clickedPenStroke;
 
-  // Handle text selection and resizing
-  if (selectedText === clickedText && clickedText) {
-    const handle = getHandleAtPosition(p.x, p.y, selectedText, canvas);
+  // Multi-select mode
+  if (selectedObjects.length > 1) {
+    // Check for resize handle on unified bounding box
+    let minX = Infinity,
+      minY = Infinity,
+      maxX = -Infinity,
+      maxY = -Infinity;
+    selectedObjects.forEach((obj) => {
+      const bounds = getObjectBounds(obj, canvas);
+      if (bounds) {
+        minX = Math.min(minX, bounds.left);
+        minY = Math.min(minY, bounds.top);
+        maxX = Math.max(maxX, bounds.right);
+        maxY = Math.max(maxY, bounds.bottom);
+      }
+    });
+
+    const padding = 10;
+    const boxLeft = minX - padding;
+    const boxTop = minY - padding;
+    const boxWidth = maxX - minX + padding * 2;
+    const boxHeight = maxY - minY + padding * 2;
+    const hitArea = 80;
+
+    // Check for handle clicks
+    let handle = null;
+    if (Math.abs(p.x - boxLeft) < hitArea && Math.abs(p.y - boxTop) < hitArea)
+      handle = "tl";
+    else if (
+      Math.abs(p.x - (boxLeft + boxWidth)) < hitArea &&
+      Math.abs(p.y - boxTop) < hitArea
+    )
+      handle = "tr";
+    else if (
+      Math.abs(p.x - boxLeft) < hitArea &&
+      Math.abs(p.y - (boxTop + boxHeight)) < hitArea
+    )
+      handle = "bl";
+    else if (
+      Math.abs(p.x - (boxLeft + boxWidth)) < hitArea &&
+      Math.abs(p.y - (boxTop + boxHeight)) < hitArea
+    )
+      handle = "br";
+    else if (
+      Math.abs(p.x - (boxLeft + boxWidth / 2)) < hitArea &&
+      Math.abs(p.y - boxTop) < hitArea
+    )
+      handle = "t";
+    else if (
+      Math.abs(p.x - (boxLeft + boxWidth / 2)) < hitArea &&
+      Math.abs(p.y - (boxTop + boxHeight)) < hitArea
+    )
+      handle = "b";
+    else if (
+      Math.abs(p.x - boxLeft) < hitArea &&
+      Math.abs(p.y - (boxTop + boxHeight / 2)) < hitArea
+    )
+      handle = "l";
+    else if (
+      Math.abs(p.x - (boxLeft + boxWidth)) < hitArea &&
+      Math.abs(p.y - (boxTop + boxHeight / 2)) < hitArea
+    )
+      handle = "r";
 
     if (handle) {
       return {
-        resizing: true,
+        resizingMultiple: true,
         resizeHandle: handle,
         dragStartPos: p,
-        originalTextProps: {
-          x: selectedText.x,
-          y: selectedText.y,
-          fontSize: selectedText.fontSize,
-          width: selectedText.width,
-        },
-      };
-    }
-  }
-
-  // Handle image selection and resizing
-  if (selectedImage === clickedImage && clickedImage) {
-    const handle = getImageHandleAtPosition(p.x, p.y, selectedImage, canvas);
-
-    if (handle) {
-      return {
-        resizing: true,
-        resizeHandle: handle,
-        dragStartPos: p,
-        originalImageProps: {
-          x: selectedImage.x,
-          y: selectedImage.y,
-          width: selectedImage.width,
-          height: selectedImage.height,
-        },
-      };
-    }
-  }
-
-  // Handle signature selection and resizing
-  if (selectedSignature === clickedSignature && clickedSignature) {
-    const handle = getSignatureHandleAtPosition(
-      p.x,
-      p.y,
-      selectedSignature,
-      canvas
-    );
-
-    if (handle) {
-      return {
-        resizing: true,
-        resizeHandle: handle,
-        dragStartPos: p,
-        originalSignatureProps: {
-          x: selectedSignature.x,
-          y: selectedSignature.y,
-          width: selectedSignature.width,
-          height: selectedSignature.height,
-        },
-      };
-    }
-  }
-
-  // Handle shape selection and resizing
-  if (selectedShape === clickedShape && clickedShape) {
-    const handle = getShapeHandleAtPosition(p.x, p.y, selectedShape, canvas);
-
-    if (handle) {
-      return {
-        resizing: true,
-        resizeHandle: handle,
-        dragStartPos: p,
-        originalShapeProps: {
-          startX: selectedShape.startX,
-          startY: selectedShape.startY,
-          endX: selectedShape.endX,
-          endY: selectedShape.endY,
-        },
-      };
-    }
-  }
-
-  // Handle pen stroke selection and resizing
-  if (selectedStroke === clickedPenStroke && clickedPenStroke) {
-    const handle = getPenStrokeHandleAtPosition(
-      p.x,
-      p.y,
-      selectedStroke,
-      canvas
-    );
-
-    if (handle) {
-      // Calculate bounding box
-      let minX = Infinity,
-        minY = Infinity,
-        maxX = -Infinity,
-        maxY = -Infinity;
-      selectedStroke.points.forEach((point) => {
-        const px = point.x * canvas.width;
-        const py = point.y * canvas.height;
-        minX = Math.min(minX, px);
-        minY = Math.min(minY, py);
-        maxX = Math.max(maxX, px);
-        maxY = Math.max(maxY, py);
-      });
-
-      return {
-        resizing: true,
-        resizeHandle: handle,
-        dragStartPos: p,
-        originalStrokeProps: {
-          points: selectedStroke.points.map((pt) => ({ x: pt.x, y: pt.y })),
+        originalBounds: {
           minX: minX / canvas.width,
           minY: minY / canvas.height,
           maxX: maxX / canvas.width,
@@ -435,289 +317,487 @@ function handleSelectStart(e, canvas, pageIndex) {
         },
       };
     }
+
+    if (clickedObject && selectedObjects.includes(clickedObject)) {
+      return { mode: "movingMultiple", dragStartPos: p };
+    }
+    if (clickedObject) {
+      // Clicking a different object - switch to single select
+      selectedObjects = [];
+      selectedText = clickedText;
+      selectedImage = clickedImage;
+      selectedShape = clickedShape;
+      selectedStamp = clickedStamp;
+      selectedSignature = clickedSignature;
+      selectedStroke = clickedPenStroke;
+      selectedPageIndex = pageIndex;
+      redrawStrokes(
+        canvas.getContext("2d"),
+        pageIndex,
+        canvas.width,
+        canvas.height
+      );
+      return {};
+    } else {
+      // Clicking empty space - clear selection and start drag box
+      selectedObjects = [];
+      selectedText = null;
+      selectedImage = null;
+      selectedShape = null;
+      selectedStamp = null;
+      selectedSignature = null;
+      selectedStroke = null;
+      selectedPageIndex = null;
+      redrawStrokes(
+        canvas.getContext("2d"),
+        pageIndex,
+        canvas.width,
+        canvas.height
+      );
+      return { mode: "dragBox", dragStartPos: p };
+    }
   }
 
-  // Select or deselect
-  selectedText = clickedText;
-  selectedImage = clickedImage;
-  selectedShape = clickedShape;
-  selectedStamp = clickedStamp;
-  selectedSignature = clickedSignature;
-  selectedStroke = clickedPenStroke;
-  selectedPageIndex =
-    clickedText ||
-    clickedImage ||
-    clickedShape ||
-    clickedStamp ||
-    clickedSignature ||
-    clickedPenStroke
-      ? pageIndex
-      : null;
-  redrawStrokes(
-    canvas.getContext("2d"),
-    pageIndex,
-    canvas.width,
-    canvas.height
-  );
-  return {};
+  if (selectedObjects.length > 0) {
+    if (clickedObject && selectedObjects.includes(clickedObject)) {
+      return { mode: "movingMultiple", dragStartPos: p };
+    }
+    if (clickedObject) {
+      // Clicking a different object - switch to single select
+      selectedObjects = [];
+      selectedText = clickedText;
+      selectedImage = clickedImage;
+      selectedShape = clickedShape;
+      selectedStamp = clickedStamp;
+      selectedSignature = clickedSignature;
+      selectedStroke = clickedPenStroke;
+      selectedPageIndex = pageIndex;
+      redrawStrokes(
+        canvas.getContext("2d"),
+        pageIndex,
+        canvas.width,
+        canvas.height
+      );
+      return {};
+    } else {
+      // Clicking empty space - clear selection and start drag box
+      selectedObjects = [];
+      selectedText = null;
+      selectedImage = null;
+      selectedShape = null;
+      selectedStamp = null;
+      selectedSignature = null;
+      selectedStroke = null;
+      selectedPageIndex = null;
+      redrawStrokes(
+        canvas.getContext("2d"),
+        pageIndex,
+        canvas.width,
+        canvas.height
+      );
+      return { mode: "dragBox", dragStartPos: p };
+    }
+  }
+
+  // Check for resize handle on single selected object
+  const currentSelected =
+    selectedText ||
+    selectedImage ||
+    selectedShape ||
+    selectedStamp ||
+    selectedSignature ||
+    selectedStroke;
+  if (currentSelected === clickedObject && clickedObject) {
+    const handle = getHandleAtPosition(p.x, p.y, currentSelected, canvas);
+    if (handle) {
+      return {
+        resizing: true,
+        resizeHandle: handle,
+        dragStartPos: p,
+        resizeObject: currentSelected,
+      };
+    }
+  }
+
+  // Select object
+  if (clickedObject) {
+    selectedText = clickedText;
+    selectedImage = clickedImage;
+    selectedShape = clickedShape;
+    selectedStamp = clickedStamp;
+    selectedSignature = clickedSignature;
+    selectedStroke = clickedPenStroke;
+    selectedPageIndex = pageIndex;
+    selectedObjects = [];
+    redrawStrokes(
+      canvas.getContext("2d"),
+      pageIndex,
+      canvas.width,
+      canvas.height
+    );
+    return {};
+  }
+
+  // Start drag box
+  selectedText = null;
+  selectedImage = null;
+  selectedShape = null;
+  selectedStamp = null;
+  selectedSignature = null;
+  selectedStroke = null;
+  selectedPageIndex = null;
+  return { mode: "dragBox", dragStartPos: p };
 }
 
 function handleSelectMove(e, canvas, pageIndex, state) {
   const p = getCanvasPosition(e, canvas);
   const ctx = canvas.getContext("2d");
 
-  if (state.resizing && selectedText) {
-    const dx = (p.x - state.dragStartPos.x) / canvas.width;
-    const dy = (p.y - state.dragStartPos.y) / canvas.height;
-
-    let newFontSize = state.originalTextProps.fontSize;
-
-    if (state.resizeHandle.includes("t")) {
-      newFontSize = state.originalTextProps.fontSize - dy;
-      selectedText.y = state.originalTextProps.y + dy;
-    } else if (state.resizeHandle.includes("b")) {
-      newFontSize = state.originalTextProps.fontSize + dy;
-    }
-
-    const minFontSize = 8 / canvas.height;
-    const maxFontSize = 200 / canvas.height;
-    newFontSize = Math.max(minFontSize, Math.min(maxFontSize, newFontSize));
-
-    selectedText.fontSize = newFontSize;
-
-    const actualFontSize = newFontSize * canvas.height;
-    ctx.font = `${actualFontSize}px Arial`;
-    const newWidth = ctx.measureText(selectedText.text).width;
-    selectedText.width = newWidth / canvas.width;
-
+  // Drag box
+  if (state.mode === "dragBox") {
+    const left = Math.min(state.dragStartPos.x, p.x);
+    const top = Math.min(state.dragStartPos.y, p.y);
+    const width = Math.abs(p.x - state.dragStartPos.x);
+    const height = Math.abs(p.y - state.dragStartPos.y);
     redrawStrokes(ctx, pageIndex, canvas.width, canvas.height);
-    return state;
+    ctx.strokeStyle = "#2196F3";
+    ctx.lineWidth = 2;
+    ctx.setLineDash([5, 5]);
+    ctx.strokeRect(left, top, width, height);
+    ctx.setLineDash([]);
+    ctx.fillStyle = "rgba(33, 150, 243, 0.1)";
+    ctx.fillRect(left, top, width, height);
+    return { ...state, currentPos: p };
   }
 
-  if (state.resizing && selectedImage && state.originalImageProps) {
-    const p = getCanvasPosition(e, canvas);
+  // Resize multiple objects
+  if (state.resizingMultiple && selectedObjects && selectedObjects.length > 1) {
     const dx = (p.x - state.dragStartPos.x) / canvas.width;
     const dy = (p.y - state.dragStartPos.y) / canvas.height;
-
     const handle = state.resizeHandle;
-    let newX = state.originalImageProps.x;
-    let newY = state.originalImageProps.y;
-    let newWidth = state.originalImageProps.width;
-    let newHeight = state.originalImageProps.height;
+    const origW = state.originalBounds.maxX - state.originalBounds.minX;
+    const origH = state.originalBounds.maxY - state.originalBounds.minY;
 
-    // Calculate aspect ratio
-    const aspectRatio =
-      state.originalImageProps.width / state.originalImageProps.height;
+    let scaleX = 1,
+      scaleY = 1;
 
-    // Handle corner resizing (maintain aspect ratio)
+    // Calculate scale based on handle - only allow positive scaling
     if (handle === "br") {
-      newWidth = state.originalImageProps.width + dx;
-      newHeight = newWidth / aspectRatio;
+      scaleX = Math.max(0.1, (origW + dx) / origW);
+      scaleY = Math.max(0.1, (origH + dy) / origH);
     } else if (handle === "bl") {
-      newWidth = state.originalImageProps.width - dx;
-      newHeight = newWidth / aspectRatio;
-      newX = state.originalImageProps.x + dx;
+      scaleX = Math.max(0.1, (origW - dx) / origW);
+      scaleY = Math.max(0.1, (origH + dy) / origH);
     } else if (handle === "tr") {
-      newWidth = state.originalImageProps.width + dx;
-      newHeight = newWidth / aspectRatio;
-      newY = state.originalImageProps.y + dy;
+      scaleX = Math.max(0.1, (origW + dx) / origW);
+      scaleY = Math.max(0.1, (origH - dy) / origH);
     } else if (handle === "tl") {
-      newWidth = state.originalImageProps.width - dx;
-      newHeight = newWidth / aspectRatio;
-      newX = state.originalImageProps.x + dx;
-      newY =
-        state.originalImageProps.y +
-        (state.originalImageProps.height - newHeight);
-    }
-    // Handle edge resizing (free form)
-    else if (handle === "r") {
-      newWidth = state.originalImageProps.width + dx;
-    } else if (handle === "l") {
-      newWidth = state.originalImageProps.width - dx;
-      newX = state.originalImageProps.x + dx;
-    } else if (handle === "b") {
-      newHeight = state.originalImageProps.height + dy;
-    } else if (handle === "t") {
-      newHeight = state.originalImageProps.height - dy;
-      newY = state.originalImageProps.y + dy;
-    }
-
-    // Set minimum size
-    const minSize = 20 / canvas.width;
-    if (newWidth > minSize && newHeight > minSize) {
-      selectedImage.x = newX;
-      selectedImage.y = newY;
-      selectedImage.width = newWidth;
-      selectedImage.height = newHeight;
-    }
-
-    redrawStrokes(ctx, pageIndex, canvas.width, canvas.height);
-    return state;
-  }
-
-  // Handle signature resizing (same as image)
-  if (state.resizing && selectedSignature && state.originalSignatureProps) {
-    const p = getCanvasPosition(e, canvas);
-    const dx = (p.x - state.dragStartPos.x) / canvas.width;
-    const dy = (p.y - state.dragStartPos.y) / canvas.height;
-
-    const handle = state.resizeHandle;
-    let newX = state.originalSignatureProps.x;
-    let newY = state.originalSignatureProps.y;
-    let newWidth = state.originalSignatureProps.width;
-    let newHeight = state.originalSignatureProps.height;
-
-    // Calculate aspect ratio
-    const aspectRatio =
-      state.originalSignatureProps.width / state.originalSignatureProps.height;
-
-    // Handle corner resizing (maintain aspect ratio)
-    if (handle === "br") {
-      newWidth = state.originalSignatureProps.width + dx;
-      newHeight = newWidth / aspectRatio;
-    } else if (handle === "bl") {
-      newWidth = state.originalSignatureProps.width - dx;
-      newHeight = newWidth / aspectRatio;
-      newX = state.originalSignatureProps.x + dx;
-    } else if (handle === "tr") {
-      newWidth = state.originalSignatureProps.width + dx;
-      newHeight = newWidth / aspectRatio;
-      newY = state.originalSignatureProps.y + dy;
-    } else if (handle === "tl") {
-      newWidth = state.originalSignatureProps.width - dx;
-      newHeight = newWidth / aspectRatio;
-      newX = state.originalSignatureProps.x + dx;
-      newY =
-        state.originalSignatureProps.y +
-        (state.originalSignatureProps.height - newHeight);
-    }
-    // Handle edge resizing (free form)
-    else if (handle === "r") {
-      newWidth = state.originalSignatureProps.width + dx;
-    } else if (handle === "l") {
-      newWidth = state.originalSignatureProps.width - dx;
-      newX = state.originalSignatureProps.x + dx;
-    } else if (handle === "b") {
-      newHeight = state.originalSignatureProps.height + dy;
-    } else if (handle === "t") {
-      newHeight = state.originalSignatureProps.height - dy;
-      newY = state.originalSignatureProps.y + dy;
-    }
-
-    // Set minimum size
-    const minSize = 20 / canvas.width;
-    if (newWidth > minSize && newHeight > minSize) {
-      selectedSignature.x = newX;
-      selectedSignature.y = newY;
-      selectedSignature.width = newWidth;
-      selectedSignature.height = newHeight;
-    }
-
-    redrawStrokes(ctx, pageIndex, canvas.width, canvas.height);
-    return state;
-  }
-
-  // Handle shape resizing
-  if (state.resizing && selectedShape && state.originalShapeProps) {
-    const p = getCanvasPosition(e, canvas);
-    const dx = (p.x - state.dragStartPos.x) / canvas.width;
-    const dy = (p.y - state.dragStartPos.y) / canvas.height;
-
-    const handle = state.resizeHandle;
-    let newStartX = state.originalShapeProps.startX;
-    let newStartY = state.originalShapeProps.startY;
-    let newEndX = state.originalShapeProps.endX;
-    let newEndY = state.originalShapeProps.endY;
-
-    // Handle corner resizing
-    if (handle === "br") {
-      newEndX = state.originalShapeProps.endX + dx;
-      newEndY = state.originalShapeProps.endY + dy;
-    } else if (handle === "bl") {
-      newStartX = state.originalShapeProps.startX + dx;
-      newEndY = state.originalShapeProps.endY + dy;
-    } else if (handle === "tr") {
-      newEndX = state.originalShapeProps.endX + dx;
-      newStartY = state.originalShapeProps.startY + dy;
-    } else if (handle === "tl") {
-      newStartX = state.originalShapeProps.startX + dx;
-      newStartY = state.originalShapeProps.startY + dy;
-    }
-    // Handle edge resizing
-    else if (handle === "r") {
-      newEndX = state.originalShapeProps.endX + dx;
-    } else if (handle === "l") {
-      newStartX = state.originalShapeProps.startX + dx;
-    } else if (handle === "b") {
-      newEndY = state.originalShapeProps.endY + dy;
-    } else if (handle === "t") {
-      newStartY = state.originalShapeProps.startY + dy;
-    }
-
-    selectedShape.startX = newStartX;
-    selectedShape.startY = newStartY;
-    selectedShape.endX = newEndX;
-    selectedShape.endY = newEndY;
-
-    redrawStrokes(ctx, pageIndex, canvas.width, canvas.height);
-    return state;
-  }
-
-  // Handle pen stroke resizing
-  if (state.resizing && selectedStroke && state.originalStrokeProps) {
-    const p = getCanvasPosition(e, canvas);
-    const dx = (p.x - state.dragStartPos.x) / canvas.width;
-    const dy = (p.y - state.dragStartPos.y) / canvas.height;
-
-    const handle = state.resizeHandle;
-    const origWidth =
-      state.originalStrokeProps.maxX - state.originalStrokeProps.minX;
-    const origHeight =
-      state.originalStrokeProps.maxY - state.originalStrokeProps.minY;
-
-    let scaleX = 1;
-    let scaleY = 1;
-    let offsetX = 0;
-    let offsetY = 0;
-
-    // Calculate scale and offset based on handle
-    if (handle === "br") {
-      scaleX = (origWidth + dx) / origWidth;
-      scaleY = (origHeight + dy) / origHeight;
-    } else if (handle === "bl") {
-      scaleX = (origWidth - dx) / origWidth;
-      scaleY = (origHeight + dy) / origHeight;
-      offsetX = dx;
-    } else if (handle === "tr") {
-      scaleX = (origWidth + dx) / origWidth;
-      scaleY = (origHeight - dy) / origHeight;
-      offsetY = dy;
-    } else if (handle === "tl") {
-      scaleX = (origWidth - dx) / origWidth;
-      scaleY = (origHeight - dy) / origHeight;
-      offsetX = dx;
-      offsetY = dy;
+      scaleX = Math.max(0.1, (origW - dx) / origW);
+      scaleY = Math.max(0.1, (origH - dy) / origH);
     } else if (handle === "r") {
-      scaleX = (origWidth + dx) / origWidth;
+      scaleX = Math.max(0.1, (origW + dx) / origW);
     } else if (handle === "l") {
-      scaleX = (origWidth - dx) / origWidth;
-      offsetX = dx;
+      scaleX = Math.max(0.1, (origW - dx) / origW);
     } else if (handle === "b") {
-      scaleY = (origHeight + dy) / origHeight;
+      scaleY = Math.max(0.1, (origH + dy) / origH);
     } else if (handle === "t") {
-      scaleY = (origHeight - dy) / origHeight;
-      offsetY = dy;
+      scaleY = Math.max(0.1, (origH - dy) / origH);
     }
 
-    // Apply transformation to all points
-    selectedStroke.points = state.originalStrokeProps.points.map((pt) => {
-      const relX = pt.x - state.originalStrokeProps.minX;
-      const relY = pt.y - state.originalStrokeProps.minY;
-      return {
-        x: state.originalStrokeProps.minX + offsetX + relX * scaleX,
-        y: state.originalStrokeProps.minY + offsetY + relY * scaleY,
-      };
+    selectedObjects.forEach((obj) => {
+      if (!obj._origProps) {
+        if (obj.type === "text") {
+          obj._origProps = { x: obj.x, y: obj.y, fontSize: obj.fontSize };
+        } else if (
+          obj.type === "image" ||
+          obj.type === "signature-image" ||
+          obj.type === "stamp"
+        ) {
+          obj._origProps = {
+            x: obj.x,
+            y: obj.y,
+            width: obj.width,
+            height: obj.height,
+          };
+        } else if (obj.type === "shape") {
+          obj._origProps = {
+            startX: obj.startX,
+            startY: obj.startY,
+            endX: obj.endX,
+            endY: obj.endY,
+          };
+        } else if (obj.points && obj.points.length > 0) {
+          obj._origProps = {
+            points: obj.points.map((pt) => ({ x: pt.x, y: pt.y })),
+          };
+        }
+      }
+
+      if (obj.type === "text") {
+        // Scale text fontSize in place (position stays the same)
+        const avgScale = (scaleX + scaleY) / 2;
+        obj.fontSize = obj._origProps.fontSize * avgScale;
+        // Recalculate width based on new fontSize
+        ctx.font = `${obj.fontSize * canvas.height}px Arial`;
+        obj.width = ctx.measureText(obj.text).width / canvas.width;
+        // Position stays the same
+        obj.x = obj._origProps.x;
+        obj.y = obj._origProps.y;
+      } else if (
+        obj.type === "image" ||
+        obj.type === "signature-image" ||
+        obj.type === "stamp"
+      ) {
+        // Scale width and height in place (position stays the same)
+        obj.width = obj._origProps.width * scaleX;
+        obj.height = obj._origProps.height * scaleY;
+        obj.x = obj._origProps.x;
+        obj.y = obj._origProps.y;
+      } else if (obj.type === "shape") {
+        // Scale shape coordinates around their own center
+        const origCenterX = (obj._origProps.startX + obj._origProps.endX) / 2;
+        const origCenterY = (obj._origProps.startY + obj._origProps.endY) / 2;
+
+        obj.startX =
+          origCenterX + (obj._origProps.startX - origCenterX) * scaleX;
+        obj.startY =
+          origCenterY + (obj._origProps.startY - origCenterY) * scaleY;
+        obj.endX = origCenterX + (obj._origProps.endX - origCenterX) * scaleX;
+        obj.endY = origCenterY + (obj._origProps.endY - origCenterY) * scaleY;
+      } else if (obj.points && obj.points.length > 0) {
+        // Scale pen strokes around their own center
+        let centerX = 0,
+          centerY = 0;
+        obj._origProps.points.forEach((pt) => {
+          centerX += pt.x;
+          centerY += pt.y;
+        });
+        centerX /= obj._origProps.points.length;
+        centerY /= obj._origProps.points.length;
+
+        obj.points = obj._origProps.points.map((pt) => ({
+          x: centerX + (pt.x - centerX) * scaleX,
+          y: centerY + (pt.y - centerY) * scaleY,
+        }));
+      }
     });
+
+    redrawStrokes(ctx, pageIndex, canvas.width, canvas.height);
+    return state;
+  }
+
+  // Move multiple
+  if (state.mode === "movingMultiple" && selectedObjects.length > 0) {
+    const dx = (p.x - state.dragStartPos.x) / canvas.width;
+    const dy = (p.y - state.dragStartPos.y) / canvas.height;
+    selectedObjects.forEach((obj) => {
+      if (
+        obj.type === "text" ||
+        obj.type === "image" ||
+        obj.type === "signature-image" ||
+        obj.type === "stamp"
+      ) {
+        if (!obj._origX) obj._origX = obj.x;
+        if (!obj._origY) obj._origY = obj.y;
+        obj.x = obj._origX + dx;
+        obj.y = obj._origY + dy;
+      } else if (obj.type === "shape") {
+        if (!obj._origStartX) {
+          obj._origStartX = obj.startX;
+          obj._origStartY = obj.startY;
+          obj._origEndX = obj.endX;
+          obj._origEndY = obj.endY;
+        }
+        obj.startX = obj._origStartX + dx;
+        obj.startY = obj._origStartY + dy;
+        obj.endX = obj._origEndX + dx;
+        obj.endY = obj._origEndY + dy;
+      } else if (obj.points && obj.points.length > 0) {
+        // Handle pen strokes (may not have type property)
+        if (!obj._origPts)
+          obj._origPts = obj.points.map((pt) => ({ x: pt.x, y: pt.y }));
+        obj.points = obj._origPts.map((pt) => ({ x: pt.x + dx, y: pt.y + dy }));
+      }
+    });
+    redrawStrokes(ctx, pageIndex, canvas.width, canvas.height);
+    return state;
+  }
+
+  // Resize single object
+  if (state.resizing && state.resizeObject) {
+    const obj = state.resizeObject;
+    const dx = (p.x - state.dragStartPos.x) / canvas.width;
+    const dy = (p.y - state.dragStartPos.y) / canvas.height;
+    const handle = state.resizeHandle;
+
+    if (obj.type === "text") {
+      if (!obj._origFontSize) {
+        obj._origFontSize = obj.fontSize;
+        obj._origY = obj.y;
+      }
+      let newFontSize = obj._origFontSize;
+      if (handle.includes("t")) {
+        newFontSize = obj._origFontSize - dy;
+        obj.y = obj._origY + dy;
+      } else if (handle.includes("b")) {
+        newFontSize = obj._origFontSize + dy;
+      }
+      newFontSize = Math.max(
+        8 / canvas.height,
+        Math.min(200 / canvas.height, newFontSize)
+      );
+      obj.fontSize = newFontSize;
+      ctx.font = `${newFontSize * canvas.height}px Arial`;
+      obj.width = ctx.measureText(obj.text).width / canvas.width;
+    } else if (
+      obj.type === "image" ||
+      obj.type === "signature-image" ||
+      obj.type === "stamp"
+    ) {
+      if (!obj._origX) {
+        obj._origX = obj.x;
+        obj._origY = obj.y;
+        obj._origW = obj.width;
+        obj._origH = obj.height;
+      }
+      const aspectRatio = obj._origW / obj._origH;
+      let newX = obj._origX,
+        newY = obj._origY,
+        newW = obj._origW,
+        newH = obj._origH;
+
+      if (handle === "br") {
+        newW = obj._origW + dx;
+        newH = newW / aspectRatio;
+      } else if (handle === "bl") {
+        newW = obj._origW - dx;
+        newH = newW / aspectRatio;
+        newX = obj._origX + dx;
+      } else if (handle === "tr") {
+        newW = obj._origW + dx;
+        newH = newW / aspectRatio;
+        newY = obj._origY + dy;
+      } else if (handle === "tl") {
+        newW = obj._origW - dx;
+        newH = newW / aspectRatio;
+        newX = obj._origX + dx;
+        newY = obj._origY + (obj._origH - newH);
+      } else if (handle === "r") {
+        newW = obj._origW + dx;
+      } else if (handle === "l") {
+        newW = obj._origW - dx;
+        newX = obj._origX + dx;
+      } else if (handle === "b") {
+        newH = obj._origH + dy;
+      } else if (handle === "t") {
+        newH = obj._origH - dy;
+        newY = obj._origY + dy;
+      }
+
+      const minSize = 20 / canvas.width;
+      if (newW > minSize && newH > minSize) {
+        obj.x = newX;
+        obj.y = newY;
+        obj.width = newW;
+        obj.height = newH;
+      }
+    } else if (obj.type === "shape") {
+      if (!obj._origStartX) {
+        obj._origStartX = obj.startX;
+        obj._origStartY = obj.startY;
+        obj._origEndX = obj.endX;
+        obj._origEndY = obj.endY;
+      }
+      let newStartX = obj._origStartX,
+        newStartY = obj._origStartY,
+        newEndX = obj._origEndX,
+        newEndY = obj._origEndY;
+
+      if (handle === "br") {
+        newEndX = obj._origEndX + dx;
+        newEndY = obj._origEndY + dy;
+      } else if (handle === "bl") {
+        newStartX = obj._origStartX + dx;
+        newEndY = obj._origEndY + dy;
+      } else if (handle === "tr") {
+        newEndX = obj._origEndX + dx;
+        newStartY = obj._origStartY + dy;
+      } else if (handle === "tl") {
+        newStartX = obj._origStartX + dx;
+        newStartY = obj._origStartY + dy;
+      } else if (handle === "r") {
+        newEndX = obj._origEndX + dx;
+      } else if (handle === "l") {
+        newStartX = obj._origStartX + dx;
+      } else if (handle === "b") {
+        newEndY = obj._origEndY + dy;
+      } else if (handle === "t") {
+        newStartY = obj._origStartY + dy;
+      }
+
+      obj.startX = newStartX;
+      obj.startY = newStartY;
+      obj.endX = newEndX;
+      obj.endY = newEndY;
+    } else if (obj.points && obj.points.length > 0) {
+      // Handle pen strokes (may not have type property)
+      if (!obj._origPts) {
+        let minX = Infinity,
+          minY = Infinity,
+          maxX = -Infinity,
+          maxY = -Infinity;
+        obj.points.forEach((pt) => {
+          minX = Math.min(minX, pt.x);
+          minY = Math.min(minY, pt.y);
+          maxX = Math.max(maxX, pt.x);
+          maxY = Math.max(maxY, pt.y);
+        });
+        obj._origPts = obj.points.map((pt) => ({ x: pt.x, y: pt.y }));
+        obj._origMinX = minX;
+        obj._origMinY = minY;
+        obj._origMaxX = maxX;
+        obj._origMaxY = maxY;
+      }
+      const origW = obj._origMaxX - obj._origMinX;
+      const origH = obj._origMaxY - obj._origMinY;
+      let scaleX = 1,
+        scaleY = 1,
+        offsetX = 0,
+        offsetY = 0;
+
+      if (handle === "br") {
+        scaleX = (origW + dx) / origW;
+        scaleY = (origH + dy) / origH;
+      } else if (handle === "bl") {
+        scaleX = (origW - dx) / origW;
+        scaleY = (origH + dy) / origH;
+        offsetX = dx;
+      } else if (handle === "tr") {
+        scaleX = (origW + dx) / origW;
+        scaleY = (origH - dy) / origH;
+        offsetY = dy;
+      } else if (handle === "tl") {
+        scaleX = (origW - dx) / origW;
+        scaleY = (origH - dy) / origH;
+        offsetX = dx;
+        offsetY = dy;
+      } else if (handle === "r") {
+        scaleX = (origW + dx) / origW;
+      } else if (handle === "l") {
+        scaleX = (origW - dx) / origW;
+        offsetX = dx;
+      } else if (handle === "b") {
+        scaleY = (origH + dy) / origH;
+      } else if (handle === "t") {
+        scaleY = (origH - dy) / origH;
+        offsetY = dy;
+      }
+
+      obj.points = obj._origPts.map((pt) => ({
+        x: obj._origMinX + offsetX + (pt.x - obj._origMinX) * scaleX,
+        y: obj._origMinY + offsetY + (pt.y - obj._origMinY) * scaleY,
+      }));
+    }
 
     redrawStrokes(ctx, pageIndex, canvas.width, canvas.height);
     return state;
@@ -726,15 +806,80 @@ function handleSelectMove(e, canvas, pageIndex, state) {
   return state;
 }
 
-function handleSelectStop(state) {
+function handleSelectStop(canvas, pageIndex, state) {
+  const ctx = canvas.getContext("2d");
+
+  if (state.mode === "dragBox" && state.currentPos) {
+    const left = Math.min(state.dragStartPos.x, state.currentPos.x);
+    const top = Math.min(state.dragStartPos.y, state.currentPos.y);
+    const right = Math.max(state.dragStartPos.x, state.currentPos.x);
+    const bottom = Math.max(state.dragStartPos.y, state.currentPos.y);
+
+    const selected = [];
+    const strokes = strokeHistory[pageIndex];
+    if (strokes) {
+      strokes.forEach((obj) => {
+        if (isObjectInSelectionBox(obj, left, top, right, bottom, canvas)) {
+          selected.push(obj);
+        }
+      });
+    }
+
+    selectedObjects = selected;
+    selectedPageIndex = selected.length > 0 ? pageIndex : null;
+    if (selected.length > 1) {
+      selectedText = null;
+      selectedImage = null;
+      selectedShape = null;
+      selectedStamp = null;
+      selectedSignature = null;
+      selectedStroke = null;
+    }
+    redrawStrokes(ctx, pageIndex, canvas.width, canvas.height);
+  }
+
+  // Clean up temp properties
+  if (state.mode === "movingMultiple" && selectedObjects) {
+    selectedObjects.forEach((obj) => {
+      delete obj._origX;
+      delete obj._origY;
+      delete obj._origStartX;
+      delete obj._origStartY;
+      delete obj._origEndX;
+      delete obj._origEndY;
+      delete obj._origPts;
+    });
+  }
+
+  if (state.resizingMultiple && selectedObjects) {
+    selectedObjects.forEach((obj) => {
+      delete obj._origProps;
+    });
+  }
+
+  if (state.resizing && state.resizeObject) {
+    const obj = state.resizeObject;
+    delete obj._origFontSize;
+    delete obj._origX;
+    delete obj._origY;
+    delete obj._origW;
+    delete obj._origH;
+    delete obj._origStartX;
+    delete obj._origStartY;
+    delete obj._origEndX;
+    delete obj._origEndY;
+    delete obj._origPts;
+    delete obj._origMinX;
+    delete obj._origMinY;
+    delete obj._origMaxX;
+    delete obj._origMaxY;
+  }
+
   return {
     resizing: false,
+    resizingMultiple: false,
     dragStartPos: null,
     resizeHandle: null,
-    originalTextProps: null,
-    originalImageProps: null,
-    originalShapeProps: null,
-    originalStrokeProps: null,
-    originalSignatureProps: null,
+    resizeObject: null,
   };
 }

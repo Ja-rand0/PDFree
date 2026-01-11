@@ -123,7 +123,9 @@ function redrawStrokes(ctx, pageIndex, canvasWidth, canvasHeight) {
       ctx.fillText(stroke.text, x, y);
 
       const isSelected =
-        selectedText === stroke && selectedPageIndex === pageIndex;
+        selectedText === stroke &&
+        selectedPageIndex === pageIndex &&
+        (!selectedObjects || selectedObjects.length <= 1);
 
       if (isSelected) {
         const boxX = x - 2;
@@ -295,7 +297,9 @@ function redrawStrokes(ctx, pageIndex, canvasWidth, canvasHeight) {
 
       // Draw selection box if selected
       const isSelected =
-        selectedShape === stroke && selectedPageIndex === pageIndex;
+        selectedShape === stroke &&
+        selectedPageIndex === pageIndex &&
+        (!selectedObjects || selectedObjects.length <= 1);
       if (isSelected) {
         let left, top, width, height;
 
@@ -412,7 +416,9 @@ function redrawStrokes(ctx, pageIndex, canvasWidth, canvasHeight) {
 
         // Draw selection box if selected
         const isSelected =
-          selectedSignature === stroke && selectedPageIndex === pageIndex;
+          selectedSignature === stroke &&
+          selectedPageIndex === pageIndex &&
+          (!selectedObjects || selectedObjects.length <= 1);
         if (isSelected) {
           ctx.strokeStyle = "#000000";
           ctx.lineWidth = 2;
@@ -473,7 +479,9 @@ function redrawStrokes(ctx, pageIndex, canvasWidth, canvasHeight) {
 
       // Draw selection box if selected
       const isSelected =
-        selectedStamp === stroke && selectedPageIndex === pageIndex;
+        selectedStamp === stroke &&
+        selectedPageIndex === pageIndex &&
+        (!selectedObjects || selectedObjects.length <= 1);
       if (isSelected) {
         const stampWidth = stroke.width * canvasWidth;
         const stampHeight = stroke.height * canvasHeight;
@@ -487,6 +495,66 @@ function redrawStrokes(ctx, pageIndex, canvasWidth, canvasHeight) {
         ctx.setLineDash([5, 5]);
         ctx.strokeRect(left - 5, top - 5, stampWidth + 10, stampHeight + 10);
         ctx.setLineDash([]);
+
+        // Draw resize handles
+        const handleSize = 8;
+        ctx.fillStyle = "#000000";
+        const boxLeft = left - 5;
+        const boxTop = top - 5;
+        const boxWidth = stampWidth + 10;
+        const boxHeight = stampHeight + 10;
+
+        // Corners
+        ctx.fillRect(
+          boxLeft - handleSize / 2,
+          boxTop - handleSize / 2,
+          handleSize,
+          handleSize
+        );
+        ctx.fillRect(
+          boxLeft + boxWidth - handleSize / 2,
+          boxTop - handleSize / 2,
+          handleSize,
+          handleSize
+        );
+        ctx.fillRect(
+          boxLeft - handleSize / 2,
+          boxTop + boxHeight - handleSize / 2,
+          handleSize,
+          handleSize
+        );
+        ctx.fillRect(
+          boxLeft + boxWidth - handleSize / 2,
+          boxTop + boxHeight - handleSize / 2,
+          handleSize,
+          handleSize
+        );
+
+        // Edges
+        ctx.fillRect(
+          boxLeft + boxWidth / 2 - handleSize / 2,
+          boxTop - handleSize / 2,
+          handleSize,
+          handleSize
+        );
+        ctx.fillRect(
+          boxLeft + boxWidth / 2 - handleSize / 2,
+          boxTop + boxHeight - handleSize / 2,
+          handleSize,
+          handleSize
+        );
+        ctx.fillRect(
+          boxLeft - handleSize / 2,
+          boxTop + boxHeight / 2 - handleSize / 2,
+          handleSize,
+          handleSize
+        );
+        ctx.fillRect(
+          boxLeft + boxWidth - handleSize / 2,
+          boxTop + boxHeight / 2 - handleSize / 2,
+          handleSize,
+          handleSize
+        );
       }
     } else if (stroke.type === "image") {
       // Draw image synchronously using pre-loaded object
@@ -504,7 +572,9 @@ function redrawStrokes(ctx, pageIndex, canvasWidth, canvasHeight) {
 
         // Draw selection box if selected
         const isSelected =
-          selectedImage === stroke && selectedPageIndex === pageIndex;
+          selectedImage === stroke &&
+          selectedPageIndex === pageIndex &&
+          (!selectedObjects || selectedObjects.length <= 1);
         if (isSelected) {
           const cornerRadius = 4;
 
@@ -630,7 +700,9 @@ function redrawStrokes(ctx, pageIndex, canvasWidth, canvasHeight) {
 
       // Draw selection box if selected
       const isSelected =
-        selectedStroke === stroke && selectedPageIndex === pageIndex;
+        selectedStroke === stroke &&
+        selectedPageIndex === pageIndex &&
+        (!selectedObjects || selectedObjects.length <= 1);
       if (isSelected && stroke.points && stroke.points.length > 0) {
         // Calculate bounding box from all points
         let minX = Infinity,
@@ -714,4 +786,161 @@ function redrawStrokes(ctx, pageIndex, canvasWidth, canvasHeight) {
       }
     }
   });
+
+  // Draw unified selection box for multi-select
+  if (
+    selectedObjects &&
+    selectedObjects.length > 1 &&
+    selectedPageIndex === pageIndex
+  ) {
+    let minX = Infinity,
+      minY = Infinity,
+      maxX = -Infinity,
+      maxY = -Infinity;
+
+    // Calculate bounding box around all selected objects
+    selectedObjects.forEach((obj) => {
+      let objBounds = null;
+
+      if (obj.type === "text") {
+        const x = obj.x * canvasWidth;
+        const y = obj.y * canvasHeight;
+        const fontSize = obj.fontSize * canvasHeight;
+        const width = obj.width * canvasWidth;
+        objBounds = { left: x, top: y - fontSize, right: x + width, bottom: y };
+      } else if (obj.type === "image" || obj.type === "signature-image") {
+        const x = obj.x * canvasWidth;
+        const y = obj.y * canvasHeight;
+        objBounds = {
+          left: x,
+          top: y,
+          right: x + obj.width * canvasWidth,
+          bottom: y + obj.height * canvasHeight,
+        };
+      } else if (obj.type === "shape") {
+        const startX = obj.startX * canvasWidth;
+        const startY = obj.startY * canvasHeight;
+        const endX = obj.endX * canvasWidth;
+        const endY = obj.endY * canvasHeight;
+        if (obj.shapeType === "circle") {
+          const radius = Math.sqrt((endX - startX) ** 2 + (endY - startY) ** 2);
+          objBounds = {
+            left: startX - radius,
+            top: startY - radius,
+            right: startX + radius,
+            bottom: startY + radius,
+          };
+        } else {
+          objBounds = {
+            left: Math.min(startX, endX),
+            top: Math.min(startY, endY),
+            right: Math.max(startX, endX),
+            bottom: Math.max(startY, endY),
+          };
+        }
+      } else if (obj.type === "stamp") {
+        const x = obj.x * canvasWidth;
+        const y = obj.y * canvasHeight;
+        const w = obj.width * canvasWidth;
+        const h = obj.height * canvasHeight;
+        objBounds = {
+          left: x - w / 2,
+          top: y - h / 2,
+          right: x + w / 2,
+          bottom: y + h / 2,
+        };
+      } else if (obj.points && obj.points.length > 0) {
+        // Handle pen strokes (may not have type property)
+        let pMinX = Infinity,
+          pMinY = Infinity,
+          pMaxX = -Infinity,
+          pMaxY = -Infinity;
+        obj.points.forEach((pt) => {
+          const px = pt.x * canvasWidth;
+          const py = pt.y * canvasHeight;
+          pMinX = Math.min(pMinX, px);
+          pMinY = Math.min(pMinY, py);
+          pMaxX = Math.max(pMaxX, px);
+          pMaxY = Math.max(pMaxY, py);
+        });
+        objBounds = { left: pMinX, top: pMinY, right: pMaxX, bottom: pMaxY };
+      }
+
+      if (objBounds) {
+        minX = Math.min(minX, objBounds.left);
+        minY = Math.min(minY, objBounds.top);
+        maxX = Math.max(maxX, objBounds.right);
+        maxY = Math.max(maxY, objBounds.bottom);
+      }
+    });
+
+    // Draw unified selection border
+    const padding = 10;
+    const boxLeft = minX - padding;
+    const boxTop = minY - padding;
+    const boxWidth = maxX - minX + padding * 2;
+    const boxHeight = maxY - minY + padding * 2;
+
+    ctx.strokeStyle = "#2196F3";
+    ctx.lineWidth = 2;
+    ctx.setLineDash([5, 5]);
+    ctx.strokeRect(boxLeft, boxTop, boxWidth, boxHeight);
+    ctx.setLineDash([]);
+
+    // Draw 8 resize handles
+    const handleSize = 8;
+    ctx.fillStyle = "#2196F3";
+
+    // Corners
+    ctx.fillRect(
+      boxLeft - handleSize / 2,
+      boxTop - handleSize / 2,
+      handleSize,
+      handleSize
+    ); // TL
+    ctx.fillRect(
+      boxLeft + boxWidth - handleSize / 2,
+      boxTop - handleSize / 2,
+      handleSize,
+      handleSize
+    ); // TR
+    ctx.fillRect(
+      boxLeft - handleSize / 2,
+      boxTop + boxHeight - handleSize / 2,
+      handleSize,
+      handleSize
+    ); // BL
+    ctx.fillRect(
+      boxLeft + boxWidth - handleSize / 2,
+      boxTop + boxHeight - handleSize / 2,
+      handleSize,
+      handleSize
+    ); // BR
+
+    // Edges
+    ctx.fillRect(
+      boxLeft + boxWidth / 2 - handleSize / 2,
+      boxTop - handleSize / 2,
+      handleSize,
+      handleSize
+    ); // Top
+    ctx.fillRect(
+      boxLeft + boxWidth / 2 - handleSize / 2,
+      boxTop + boxHeight - handleSize / 2,
+      handleSize,
+      handleSize
+    ); // Bottom
+    ctx.fillRect(
+      boxLeft - handleSize / 2,
+      boxTop + boxHeight / 2 - handleSize / 2,
+      handleSize,
+      handleSize
+    ); // Left
+    ctx.fillRect(
+      boxLeft + boxWidth - handleSize / 2,
+      boxTop + boxHeight / 2 - handleSize / 2,
+      handleSize,
+      handleSize
+    ); // Right
+  }
 }
