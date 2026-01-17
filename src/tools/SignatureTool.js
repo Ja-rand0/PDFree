@@ -1,8 +1,7 @@
-// Signature tool with drawing modal and cursor preview
+// Signature tool with drawing modal and cursor preview - stores as vector paths
 
-let signatureDataUrl = null;
-let signatureDrawing = false;
 let signaturePoints = [];
+let signatureDrawing = false;
 let signatureModal = null;
 let signatureCanvas = null;
 let signatureCtx = null;
@@ -13,22 +12,21 @@ function initSignatureModal() {
 
   // Create modal overlay
   signatureModal = document.createElement("div");
-  signatureModal.className =
-    "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden";
+  signatureModal.className = "hidden";
   signatureModal.id = "signatureModal";
 
   // Create modal content
   const modalContent = document.createElement("div");
-  modalContent.className = "bg-white rounded-lg p-6 shadow-xl";
+  modalContent.className = "signature-modal-content";
   modalContent.innerHTML = `
-    <h3 class="text-lg font-semibold mb-4">Draw Your Signature</h3>
-    <div class="border-2 border-gray-300 rounded-lg overflow-hidden mb-4">
-      <canvas id="signatureCanvas" width="400" height="200" class="bg-white cursor-crosshair"></canvas>
+    <h3 class="signature-modal-title">Draw Your Signature</h3>
+    <div class="signature-canvas-container">
+      <canvas id="signatureCanvas" width="400" height="200"></canvas>
     </div>
-    <div class="flex gap-3 justify-end">
-      <button id="signatureClear" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md transition">Clear</button>
-      <button id="signatureClose" class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-md transition">Close</button>
-      <button id="signatureDone" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition">Done</button>
+    <div class="signature-modal-buttons">
+      <button id="signatureClear" class="signature-btn signature-btn-clear">Clear</button>
+      <button id="signatureClose" class="signature-btn signature-btn-close">Close</button>
+      <button id="signatureDone" class="signature-btn signature-btn-done">Done</button>
     </div>
   `;
 
@@ -57,12 +55,15 @@ function initSignatureModal() {
   cursorPreview = document.createElement("div");
   cursorPreview.id = "signatureCursorPreview";
   cursorPreview.className = "fixed pointer-events-none z-40 hidden";
-  cursorPreview.style.opacity = "0.6";
+  cursorPreview.style.border = "2px dashed #3b82f6";
+  cursorPreview.style.background = "rgba(59, 130, 246, 0.1)";
+  cursorPreview.style.borderRadius = "4px";
   document.body.appendChild(cursorPreview);
 }
 
 function setupSignatureCanvas() {
   let isDrawing = false;
+  let currentStroke = [];
 
   signatureCanvas.addEventListener("mousedown", (e) => {
     isDrawing = true;
@@ -70,9 +71,9 @@ function setupSignatureCanvas() {
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
+    currentStroke = [{ x, y }];
     signatureCtx.beginPath();
     signatureCtx.moveTo(x, y);
-    signaturePoints = [{ x, y }];
   });
 
   signatureCanvas.addEventListener("mousemove", (e) => {
@@ -82,21 +83,26 @@ function setupSignatureCanvas() {
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
+    currentStroke.push({ x, y });
     signatureCtx.lineTo(x, y);
     signatureCtx.strokeStyle = "#000000";
     signatureCtx.lineWidth = 2;
     signatureCtx.lineCap = "round";
     signatureCtx.lineJoin = "round";
     signatureCtx.stroke();
-
-    signaturePoints.push({ x, y });
   });
 
   signatureCanvas.addEventListener("mouseup", () => {
+    if (isDrawing && currentStroke.length > 0) {
+      signaturePoints.push([...currentStroke]);
+    }
     isDrawing = false;
   });
 
   signatureCanvas.addEventListener("mouseleave", () => {
+    if (isDrawing && currentStroke.length > 0) {
+      signaturePoints.push([...currentStroke]);
+    }
     isDrawing = false;
   });
 
@@ -109,9 +115,9 @@ function setupSignatureCanvas() {
     const x = touch.clientX - rect.left;
     const y = touch.clientY - rect.top;
 
+    currentStroke = [{ x, y }];
     signatureCtx.beginPath();
     signatureCtx.moveTo(x, y);
-    signaturePoints = [{ x, y }];
   });
 
   signatureCanvas.addEventListener("touchmove", (e) => {
@@ -123,17 +129,19 @@ function setupSignatureCanvas() {
     const x = touch.clientX - rect.left;
     const y = touch.clientY - rect.top;
 
+    currentStroke.push({ x, y });
     signatureCtx.lineTo(x, y);
     signatureCtx.strokeStyle = "#000000";
     signatureCtx.lineWidth = 2;
     signatureCtx.lineCap = "round";
     signatureCtx.lineJoin = "round";
     signatureCtx.stroke();
-
-    signaturePoints.push({ x, y });
   });
 
   signatureCanvas.addEventListener("touchend", () => {
+    if (isDrawing && currentStroke.length > 0) {
+      signaturePoints.push([...currentStroke]);
+    }
     isDrawing = false;
   });
 }
@@ -160,36 +168,39 @@ function saveSignature() {
     return;
   }
 
-  // Save canvas as data URL
-  signatureDataUrl = signatureCanvas.toDataURL("image/png");
-
   // Close modal
   signatureModal.classList.add("hidden");
 
   // Show cursor preview
   showCursorPreview();
 
-  console.log("Signature saved, ready to place");
+  console.log("Signature saved with", signaturePoints.length, "strokes");
 }
 
 function showCursorPreview() {
-  if (!signatureDataUrl || !cursorPreview) return;
+  if (signaturePoints.length === 0 || !cursorPreview) return;
 
-  const img = new Image();
-  img.onload = () => {
-    cursorPreview.innerHTML = "";
-    cursorPreview.style.width = "100px";
-    cursorPreview.style.height = `${(img.height / img.width) * 100}px`;
+  // Calculate bounding box of signature
+  let minX = Infinity,
+    minY = Infinity,
+    maxX = -Infinity,
+    maxY = -Infinity;
+  signaturePoints.forEach((stroke) => {
+    stroke.forEach((point) => {
+      minX = Math.min(minX, point.x);
+      minY = Math.min(minY, point.y);
+      maxX = Math.max(maxX, point.x);
+      maxY = Math.max(maxY, point.y);
+    });
+  });
 
-    const previewImg = document.createElement("img");
-    previewImg.src = signatureDataUrl;
-    previewImg.style.width = "100%";
-    previewImg.style.height = "100%";
-    cursorPreview.appendChild(previewImg);
+  const width = maxX - minX;
+  const height = maxY - minY;
+  const previewScale = 100 / width; // Scale to 100px wide
 
-    cursorPreview.classList.remove("hidden");
-  };
-  img.src = signatureDataUrl;
+  cursorPreview.style.width = `${width * previewScale}px`;
+  cursorPreview.style.height = `${height * previewScale}px`;
+  cursorPreview.classList.remove("hidden");
 
   // Add cursor tracking
   document.addEventListener("mousemove", updateCursorPreview);
@@ -198,8 +209,11 @@ function showCursorPreview() {
 function updateCursorPreview(e) {
   if (!cursorPreview || cursorPreview.classList.contains("hidden")) return;
 
-  cursorPreview.style.left = `${e.clientX - 50}px`;
-  cursorPreview.style.top = `${e.clientY - 25}px`;
+  const width = parseFloat(cursorPreview.style.width);
+  const height = parseFloat(cursorPreview.style.height);
+
+  cursorPreview.style.left = `${e.clientX - width / 2}px`;
+  cursorPreview.style.top = `${e.clientY - height / 2}px`;
 }
 
 function hideCursorPreview() {
@@ -210,50 +224,81 @@ function hideCursorPreview() {
 }
 
 function handleSignatureClick(e, canvas, pageIndex) {
-  if (!signatureDataUrl) {
+  if (signaturePoints.length === 0) {
     // No signature drawn yet, open modal
     openSignatureModal();
     return;
   }
 
-  // Place signature on canvas
+  // Calculate bounding box of original signature
+  let minX = Infinity,
+    minY = Infinity,
+    maxX = -Infinity,
+    maxY = -Infinity;
+  signaturePoints.forEach((stroke) => {
+    stroke.forEach((point) => {
+      minX = Math.min(minX, point.x);
+      minY = Math.min(minY, point.y);
+      maxX = Math.max(maxX, point.x);
+      maxY = Math.max(maxY, point.y);
+    });
+  });
+
+  const sigWidth = maxX - minX;
+  const sigHeight = maxY - minY;
+
+  // Get click position
   const p = getCanvasPosition(e, canvas);
-  const normalizedX = p.x / canvas.width;
-  const normalizedY = p.y / canvas.height;
 
-  const img = new Image();
-  img.onload = () => {
-    // Calculate aspect ratio
-    const aspectRatio = img.height / img.width;
-    const signatureWidth = 0.15; // 15% of canvas width
-    const signatureHeight = signatureWidth * aspectRatio;
+  // Calculate target size (15% of canvas width, maintaining aspect ratio)
+  const targetWidth = canvas.width * 0.15;
+  const scale = targetWidth / sigWidth;
+  const targetHeight = sigHeight * scale;
 
-    // Create signature stroke
+  // Calculate normalized click position (center signature on click)
+  const clickNormX = p.x / canvas.width;
+  const clickNormY = p.y / canvas.height;
+
+  // Place each stroke as a separate signature stroke
+  signaturePoints.forEach((stroke) => {
+    // Normalize and scale points relative to click position
+    const normalizedPoints = stroke.map((point) => {
+      // Translate to origin, scale, then translate to click position
+      const scaledX = (point.x - minX) * scale;
+      const scaledY = (point.y - minY) * scale;
+
+      // Center on click position
+      const finalX = p.x - targetWidth / 2 + scaledX;
+      const finalY = p.y - targetHeight / 2 + scaledY;
+
+      return {
+        x: finalX / canvas.width,
+        y: finalY / canvas.height,
+      };
+    });
+
+    // Create signature stroke (vector-based like pen strokes)
     const signatureStroke = {
-      type: "signature-image",
-      dataUrl: signatureDataUrl,
-      imgObject: img,
-      x: normalizedX - signatureWidth / 2, // Center on click
-      y: normalizedY - signatureHeight / 2,
-      width: signatureWidth,
-      height: signatureHeight,
+      type: "signature",
+      color: "#000000",
+      width: 2,
+      points: normalizedPoints,
     };
 
     strokeHistory[pageIndex].push(signatureStroke);
     undoStacks[pageIndex].push(signatureStroke);
     redoStacks[pageIndex].length = 0;
+  });
 
-    // Redraw to show signature
-    redrawStrokes(
-      canvas.getContext("2d"),
-      pageIndex,
-      canvas.width,
-      canvas.height
-    );
+  // Redraw to show signature
+  redrawStrokes(
+    canvas.getContext("2d"),
+    pageIndex,
+    canvas.width,
+    canvas.height
+  );
 
-    console.log("Signature placed");
-  };
-  img.src = signatureDataUrl;
+  console.log(`Placed signature with ${signaturePoints.length} strokes`);
 }
 
 // When signature tool is deactivated, hide preview

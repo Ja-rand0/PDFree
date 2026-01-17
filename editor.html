@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="src/styles/toolbar.css" />
   <link rel="stylesheet" href="src/styles/popups.css" />
   <link rel="stylesheet" href="src/styles/components.css" />
+  <link rel="stylesheet" href="src/styles/signature.css" />
 </head>
 
 <body>
@@ -26,47 +27,8 @@
       <button id="highlightTool" class="tool-btn" title="Highlighter">🖍️</button>
       <button id="imageTool" class="tool-btn" title="Insert Image">🖼️</button>
       <button id="shapeTool" class="tool-btn" title="Shapes">⬟</button>
-      <!-- Shape popup selector -->
-      <div id="shapePopup" class="hidden">
-        <div class="popup-title">Select Shape</div>
-        <div class="popup-list">
-          <button id="rectangleShape" class="popup-btn popup-btn-gray">
-            <span>▭</span> Rectangle
-          </button>
-          <button id="circleShape" class="popup-btn popup-btn-gray">
-            <span>○</span> Circle
-          </button>
-          <button id="lineShape" class="popup-btn popup-btn-gray">
-            <span>─</span> Line
-          </button>
-          <button id="arrowShape" class="popup-btn popup-btn-gray">
-            <span>→</span> Arrow
-          </button>
-        </div>
-      </div>
       <button id="signatureTool" class="tool-btn" title="Signature">✍️</button>
       <button id="stampTool" class="tool-btn" title="Stamps">🏷️</button>
-      <!-- Stamp popup selector -->
-      <div id="stampPopup" class="hidden">
-        <div class="popup-title">Select Stamp</div>
-        <div class="popup-list">
-          <button id="stampApproved" class="popup-btn popup-btn-green">
-            <span>✓</span> APPROVED
-          </button>
-          <button id="stampRejected" class="popup-btn popup-btn-red">
-            <span>✗</span> REJECTED
-          </button>
-          <button id="stampConfidential" class="popup-btn popup-btn-red">
-            <span>🔒</span> CONFIDENTIAL
-          </button>
-          <button id="stampDraft" class="popup-btn popup-btn-gray">
-            <span>📝</span> DRAFT
-          </button>
-          <button id="stampUrgent" class="popup-btn popup-btn-orange">
-            <span>⚠️</span> URGENT
-          </button>
-        </div>
-      </div>
     </div>
 
     <!-- Divider -->
@@ -77,6 +39,47 @@
       <button id="zoomInBtn" class="tool-btn" title="Zoom In">+</button>
       <span id="zoomTxt">100%</span>
       <button id="zoomOutBtn" class="tool-btn" title="Zoom Out">−</button>
+    </div>
+  </div>
+
+  <!-- Shape popup selector (outside sidebar) -->
+  <div id="shapePopup" class="hidden">
+    <div class="popup-title">Select Shape</div>
+    <div class="popup-list">
+      <button id="rectangleShape" class="popup-btn popup-btn-gray">
+        <span>▭</span> Rectangle
+      </button>
+      <button id="circleShape" class="popup-btn popup-btn-gray">
+        <span>○</span> Circle
+      </button>
+      <button id="lineShape" class="popup-btn popup-btn-gray">
+        <span>─</span> Line
+      </button>
+      <button id="arrowShape" class="popup-btn popup-btn-gray">
+        <span>→</span> Arrow
+      </button>
+    </div>
+  </div>
+
+  <!-- Stamp popup selector (outside sidebar) -->
+  <div id="stampPopup" class="hidden">
+    <div class="popup-title">Select Stamp</div>
+    <div class="popup-list">
+      <button id="stampApproved" class="popup-btn popup-btn-green">
+        <span>✓</span> APPROVED
+      </button>
+      <button id="stampRejected" class="popup-btn popup-btn-red">
+        <span>✗</span> REJECTED
+      </button>
+      <button id="stampConfidential" class="popup-btn popup-btn-red">
+        <span>🔒</span> CONFIDENTIAL
+      </button>
+      <button id="stampDraft" class="popup-btn popup-btn-gray">
+        <span>📝</span> DRAFT
+      </button>
+      <button id="stampUrgent" class="popup-btn popup-btn-orange">
+        <span>⚠️</span> URGENT
+      </button>
     </div>
   </div>
 
@@ -115,6 +118,8 @@
     <button id="undoBtn" class="btn btn-gray">Undo</button>
     <button id="redoBtn" class="btn btn-gray">Redo</button>
     <button id="clearBtn" class="btn btn-gray">Clear all</button>
+    <button id="savePdfBtn" class="btn btn-green">Save PDF</button>
+    FIXME: Fix Stamp resizing issue with Select Tool/MultiSelect
   </div>
 
   <!-- PDF Area -->
@@ -122,8 +127,10 @@
     <div id="canvasWrap"></div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
   <script src="src/core/State.js"></script>
   <script src="src/core/PDFLoader.js"></script>
+  <script src="src/core/SavePDF.js"></script>
   <script src="src/core/EventHandler.js"></script>
   <script src="src/ui/Toolbar.js"></script>
   <script src="src/ui/App.js"></script>

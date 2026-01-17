@@ -17,7 +17,13 @@ body {
 .relative {
     position: relative;
     display: inline-block;
-    margin-bottom: 24px;
+    margin-bottom: 12px;
+}
+
+.absolute {
+    position: absolute;
+    top: 0;
+    left: 0;
 }
 
 /* PDF Canvas Area */
@@ -50,6 +56,9 @@ body {
 }
 
 .inkCanvasTouch {
+    position: absolute;
+    top: 0;
+    left: 0;
     touch-action: none;
     -webkit-user-select: none;
     user-select: none;

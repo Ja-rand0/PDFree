@@ -1,0 +1,93 @@
+/* Signature Modal */
+#signatureModal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+
+#signatureModal.hidden {
+    display: none;
+}
+
+.signature-modal-content {
+    background: white;
+    border-radius: 8px;
+    padding: 24px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.signature-modal-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 16px;
+}
+
+.signature-canvas-container {
+    border: 2px solid #d1d5db;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 16px;
+}
+
+#signatureCanvas {
+    background: white;
+    cursor: crosshair;
+    display: block;
+}
+
+.signature-modal-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+.signature-btn {
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.2s;
+}
+
+.signature-btn-clear {
+    background: #e5e7eb;
+    color: #1f2937;
+}
+
+.signature-btn-clear:hover {
+    background: #d1d5db;
+}
+
+.signature-btn-close {
+    background: #6b7280;
+    color: white;
+}
+
+.signature-btn-close:hover {
+    background: #4b5563;
+}
+
+.signature-btn-done {
+    background: #2563eb;
+    color: white;
+}
+
+.signature-btn-done:hover {
+    background: #1d4ed8;
+}
+
+/* Signature cursor preview */
+#signatureCursorPreview {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9998;
+    opacity: 0.6;
+}

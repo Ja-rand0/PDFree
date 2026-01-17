@@ -84,6 +84,99 @@ function eraseAtPoint(pageIndex, x, y, radius, canvasWidth, canvasHeight) {
     // Skip text objects (use delete tool for those)
     if (stroke.type === "text") continue;
 
+    // Handle stamps - erase entirely when touched
+    if (stroke.type === "stamp") {
+      const stampX = stroke.x * canvasWidth;
+      const stampY = stroke.y * canvasHeight;
+      const stampWidth = stroke.width * canvasWidth;
+      const stampHeight = stroke.height * canvasHeight;
+
+      // Stamps are centered
+      const left = stampX - stampWidth / 2;
+      const right = stampX + stampWidth / 2;
+      const top = stampY - stampHeight / 2;
+      const bottom = stampY + stampHeight / 2;
+
+      // Check if eraser touches stamp
+      const closestX = Math.max(left, Math.min(x, right));
+      const closestY = Math.max(top, Math.min(y, bottom));
+      const distance = Math.sqrt((x - closestX) ** 2 + (y - closestY) ** 2);
+
+      if (distance <= radius) {
+        const deletedStroke = strokeHistory[pageIndex].splice(i, 1)[0];
+        undoStacks[pageIndex].push({ type: "erase", stroke: deletedStroke });
+        redoStacks[pageIndex].length = 0;
+        console.log("Stamp erased");
+      }
+      continue;
+    }
+
+    // Handle shapes - convert to points and split like pen strokes
+    if (stroke.type === "shape") {
+      // Convert shape to points based on type
+      const points = convertShapeToPoints(stroke, canvasWidth, canvasHeight);
+
+      // Create a temporary stroke object with points
+      const tempStroke = {
+        type: stroke.type,
+        color: stroke.color,
+        width: stroke.width,
+        shapeType: stroke.shapeType,
+        points: points.map((p) => ({
+          x: p.x / canvasWidth,
+          y: p.y / canvasHeight,
+        })),
+      };
+
+      // Split using the same logic as pen strokes
+      const newSegments = splitStrokeByEraser(
+        tempStroke,
+        x,
+        y,
+        radius,
+        canvasWidth,
+        canvasHeight
+      );
+
+      if (newSegments.length === 0) {
+        // Entire shape erased
+        const deletedStroke = strokeHistory[pageIndex].splice(i, 1)[0];
+        undoStacks[pageIndex].push({ type: "erase", stroke: deletedStroke });
+        redoStacks[pageIndex].length = 0;
+        console.log("Entire shape erased");
+      } else if (
+        newSegments.length === 1 &&
+        newSegments[0].points.length === tempStroke.points.length
+      ) {
+        // No points erased, shape unchanged
+        continue;
+      } else {
+        // Shape was split - convert segments back to shapes or pen strokes
+        console.log("Shape split into", newSegments.length, "segments");
+        console.log("Original shape type:", stroke.shapeType);
+        console.log("Segments:", newSegments);
+
+        const deletedStroke = strokeHistory[pageIndex].splice(i, 1)[0];
+        undoStacks[pageIndex].push({ type: "erase", stroke: deletedStroke });
+        redoStacks[pageIndex].length = 0;
+
+        // Add new segments as pen strokes (since split shapes become irregular)
+        newSegments.forEach((segment, idx) => {
+          const newStroke = {
+            type: "pen",
+            color: stroke.color,
+            width: stroke.width,
+            points: segment.points,
+          };
+          console.log(
+            `Adding segment ${idx} with ${segment.points.length} points`
+          );
+          strokeHistory[pageIndex].splice(i, 0, newStroke);
+        });
+      }
+      continue;
+    }
+
     if (!stroke.points || stroke.points.length === 0) continue;
 
     // Split the stroke into segments, keeping only parts outside eraser radius
@@ -123,6 +216,62 @@ function eraseAtPoint(pageIndex, x, y, radius, canvasWidth, canvasHeight) {
       });
     }
   }
+}
+
+// Convert shape to a series of points for eraser processing
+function convertShapeToPoints(stroke, canvasWidth, canvasHeight) {
+  const points = [];
+  const x1 = stroke.startX * canvasWidth;
+  const y1 = stroke.startY * canvasHeight;
+  const x2 = stroke.endX * canvasWidth;
+  const y2 = stroke.endY * canvasHeight;
+
+  if (stroke.shapeType === "rectangle") {
+    // Sample points around rectangle perimeter
+    const steps = 50;
+    const width = x2 - x1;
+    const height = y2 - y1;
+
+    // Top edge
+    for (let i = 0; i <= steps; i++) {
+      points.push({ x: x1 + (width * i) / steps, y: y1 });
+    }
+    // Right edge
+    for (let i = 1; i <= steps; i++) {
+      points.push({ x: x2, y: y1 + (height * i) / steps });
+    }
+    // Bottom edge
+    for (let i = 1; i <= steps; i++) {
+      points.push({ x: x2 - (width * i) / steps, y: y2 });
+    }
+    // Left edge
+    for (let i = 1; i < steps; i++) {
+      points.push({ x: x1, y: y2 - (height * i) / steps });
+    }
+  } else if (stroke.shapeType === "circle") {
+    // Sample points around circle
+    const steps = 100;
+    const radius = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+    for (let i = 0; i < steps; i++) {
+      const angle = (i / steps) * Math.PI * 2;
+      points.push({
+        x: x1 + radius * Math.cos(angle),
+        y: y1 + radius * Math.sin(angle),
+      });
+    }
+  } else if (stroke.shapeType === "line" || stroke.shapeType === "arrow") {
+    // Sample points along the line
+    const steps = 50;
+    for (let i = 0; i <= steps; i++) {
+      const t = i / steps;
+      points.push({
+        x: x1 + (x2 - x1) * t,
+        y: y1 + (y2 - y1) * t,
+      });
+    }
+  }
+
+  return points;
 }
 
 function splitStrokeByEraser(

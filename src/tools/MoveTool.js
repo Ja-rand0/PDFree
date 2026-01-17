@@ -65,6 +65,50 @@ function handleMoveStart(e, canvas, pageIndex) {
     };
   }
 
+  // Check if clicking on shape
+  const clickedShape = checkShapeClick(
+    pageIndex,
+    p.x,
+    p.y,
+    canvas.width,
+    canvas.height
+  );
+
+  if (clickedShape) {
+    return {
+      moving: true,
+      movingObject: clickedShape,
+      dragStartPos: p,
+      originalProps: {
+        startX: clickedShape.startX,
+        startY: clickedShape.startY,
+        endX: clickedShape.endX,
+        endY: clickedShape.endY,
+      },
+    };
+  }
+
+  // Check if clicking on stamp
+  const clickedStamp = checkStampClick(
+    pageIndex,
+    p.x,
+    p.y,
+    canvas.width,
+    canvas.height
+  );
+
+  if (clickedStamp) {
+    return {
+      moving: true,
+      movingObject: clickedStamp,
+      dragStartPos: p,
+      originalProps: {
+        x: clickedStamp.x,
+        y: clickedStamp.y,
+      },
+    };
+  }
+
   return { moving: false };
 }
 
@@ -83,6 +127,16 @@ function handleMoveMove(e, canvas, pageIndex, state) {
     state.movingObject.y = state.originalProps.y + dy;
   } else if (state.movingObject.type === "image") {
     // Move image
+    state.movingObject.x = state.originalProps.x + dx;
+    state.movingObject.y = state.originalProps.y + dy;
+  } else if (state.movingObject.type === "shape") {
+    // Move shape - update start and end positions
+    state.movingObject.startX = state.originalProps.startX + dx;
+    state.movingObject.startY = state.originalProps.startY + dy;
+    state.movingObject.endX = state.originalProps.endX + dx;
+    state.movingObject.endY = state.originalProps.endY + dy;
+  } else if (state.movingObject.type === "stamp") {
+    // Move stamp
     state.movingObject.x = state.originalProps.x + dx;
     state.movingObject.y = state.originalProps.y + dy;
   } else if (state.movingObject.points) {
