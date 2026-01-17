@@ -649,11 +649,8 @@ function handleSelectMove(e, canvas, pageIndex, state) {
       obj.fontSize = newFontSize;
       ctx.font = `${newFontSize * canvas.height}px Arial`;
       obj.width = ctx.measureText(obj.text).width / canvas.width;
-    } else if (
-      obj.type === "image" ||
-      obj.type === "signature-image" ||
-      obj.type === "stamp"
-    ) {
+    } else if (obj.type === "image" || obj.type === "signature-image") {
+      // Images use top-left corner positioning
       if (!obj._origX) {
         obj._origX = obj.x;
         obj._origY = obj.y;
@@ -698,6 +695,42 @@ function handleSelectMove(e, canvas, pageIndex, state) {
       if (newW > minSize && newH > minSize) {
         obj.x = newX;
         obj.y = newY;
+        obj.width = newW;
+        obj.height = newH;
+      }
+    } else if (obj.type === "stamp") {
+      // Stamps use CENTER positioning - resize around center
+      if (!obj._origX) {
+        obj._origX = obj.x;
+        obj._origY = obj.y;
+        obj._origW = obj.width;
+        obj._origH = obj.height;
+      }
+      const aspectRatio = obj._origW / obj._origH;
+      let newW = obj._origW,
+        newH = obj._origH;
+
+      // For stamps, we scale from center - position stays the same
+      // Corner handles scale proportionally
+      if (handle === "br" || handle === "tr") {
+        newW = obj._origW + dx * 2; // *2 because we're scaling from center
+        newH = newW / aspectRatio;
+      } else if (handle === "bl" || handle === "tl") {
+        newW = obj._origW - dx * 2;
+        newH = newW / aspectRatio;
+      } else if (handle === "r") {
+        newW = obj._origW + dx * 2;
+      } else if (handle === "l") {
+        newW = obj._origW - dx * 2;
+      } else if (handle === "b") {
+        newH = obj._origH + dy * 2;
+      } else if (handle === "t") {
+        newH = obj._origH - dy * 2;
+      }
+
+      const minSize = 20 / canvas.width;
+      if (newW > minSize && newH > minSize) {
+        // Center position stays the same for stamps
         obj.width = newW;
         obj.height = newH;
       }
