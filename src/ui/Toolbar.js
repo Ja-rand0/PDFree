@@ -218,7 +218,12 @@ function initToolbar() {
 
       const stroke = undoStacks[i].pop();
       redoStacks[i].push(stroke);
-      strokeHistory[i].pop();
+
+      // Find and remove the stroke from strokeHistory
+      const idx = strokeHistory[i].indexOf(stroke);
+      if (idx > -1) {
+        strokeHistory[i].splice(idx, 1);
+      }
 
       redrawStrokes(p.ctx, i, p.inkC.width, p.inkC.height);
     });
@@ -442,7 +447,7 @@ function initToolbar() {
   // Stamp selectors
   document.getElementById("stampApproved").addEventListener("click", () => {
     setStamp("approved");
-    document.getElementById("stampPopup").classList.add("");
+    document.getElementById("stampPopup").classList.add("hidden");
   });
   document.getElementById("stampRejected").addEventListener("click", () => {
     setStamp("rejected");

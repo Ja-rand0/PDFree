@@ -318,11 +318,20 @@ function handleSelectStart(e, canvas, pageIndex) {
       };
     }
 
-    if (clickedObject && selectedObjects.includes(clickedObject)) {
+    // Check if clicking inside the selection box (including whitespace)
+    const clickedInsideBox =
+      p.x >= boxLeft &&
+      p.x <= boxLeft + boxWidth &&
+      p.y >= boxTop &&
+      p.y <= boxTop + boxHeight;
+
+    if (clickedInsideBox) {
+      // Click anywhere inside the box to move the entire selection
       return { mode: "movingMultiple", dragStartPos: p };
     }
+
     if (clickedObject) {
-      // Clicking a different object - switch to single select
+      // Clicking a different object outside the box - switch to single select
       selectedObjects = [];
       selectedText = clickedText;
       selectedImage = clickedImage;
@@ -339,7 +348,7 @@ function handleSelectStart(e, canvas, pageIndex) {
       );
       return {};
     } else {
-      // Clicking empty space - clear selection and start drag box
+      // Clicking empty space outside the box - clear selection and start drag box
       selectedObjects = [];
       selectedText = null;
       selectedImage = null;
@@ -480,34 +489,58 @@ function handleSelectMove(e, canvas, pageIndex, state) {
 
     let scaleX = 1,
       scaleY = 1;
+    let anchorX, anchorY;
 
-    // Calculate scale based on handle - only allow positive scaling
+    // Calculate scale and anchor point based on handle
+    // Anchor is the opposite corner/edge from the handle being dragged
     if (handle === "br") {
       scaleX = Math.max(0.1, (origW + dx) / origW);
       scaleY = Math.max(0.1, (origH + dy) / origH);
+      anchorX = state.originalBounds.minX; // Top-left anchor
+      anchorY = state.originalBounds.minY;
     } else if (handle === "bl") {
       scaleX = Math.max(0.1, (origW - dx) / origW);
       scaleY = Math.max(0.1, (origH + dy) / origH);
+      anchorX = state.originalBounds.maxX; // Top-right anchor
+      anchorY = state.originalBounds.minY;
     } else if (handle === "tr") {
       scaleX = Math.max(0.1, (origW + dx) / origW);
       scaleY = Math.max(0.1, (origH - dy) / origH);
+      anchorX = state.originalBounds.minX; // Bottom-left anchor
+      anchorY = state.originalBounds.maxY;
     } else if (handle === "tl") {
       scaleX = Math.max(0.1, (origW - dx) / origW);
       scaleY = Math.max(0.1, (origH - dy) / origH);
+      anchorX = state.originalBounds.maxX; // Bottom-right anchor
+      anchorY = state.originalBounds.maxY;
     } else if (handle === "r") {
       scaleX = Math.max(0.1, (origW + dx) / origW);
+      anchorX = state.originalBounds.minX; // Left edge anchor
+      anchorY = state.originalBounds.minY;
     } else if (handle === "l") {
       scaleX = Math.max(0.1, (origW - dx) / origW);
+      anchorX = state.originalBounds.maxX; // Right edge anchor
+      anchorY = state.originalBounds.minY;
     } else if (handle === "b") {
       scaleY = Math.max(0.1, (origH + dy) / origH);
+      anchorX = state.originalBounds.minX;
+      anchorY = state.originalBounds.minY; // Top edge anchor
     } else if (handle === "t") {
       scaleY = Math.max(0.1, (origH - dy) / origH);
+      anchorX = state.originalBounds.minX;
+      anchorY = state.originalBounds.maxY; // Bottom edge anchor
     }
 
+    // Store original properties on first resize
     selectedObjects.forEach((obj) => {
       if (!obj._origProps) {
         if (obj.type === "text") {
-          obj._origProps = { x: obj.x, y: obj.y, fontSize: obj.fontSize };
+          obj._origProps = {
+            x: obj.x,
+            y: obj.y,
+            fontSize: obj.fontSize,
+            width: obj.width,
+          };
         } else if (
           obj.type === "image" ||
           obj.type === "signature-image" ||
@@ -532,52 +565,42 @@ function handleSelectMove(e, canvas, pageIndex, state) {
           };
         }
       }
+    });
 
+    // Scale each object relative to the unified bounding box anchor
+    selectedObjects.forEach((obj) => {
       if (obj.type === "text") {
-        // Scale text fontSize in place (position stays the same)
+        // Scale text position and fontSize relative to anchor
         const avgScale = (scaleX + scaleY) / 2;
         obj.fontSize = obj._origProps.fontSize * avgScale;
+        obj.x = anchorX + (obj._origProps.x - anchorX) * scaleX;
+        obj.y = anchorY + (obj._origProps.y - anchorY) * scaleY;
         // Recalculate width based on new fontSize
         ctx.font = `${obj.fontSize * canvas.height}px Arial`;
         obj.width = ctx.measureText(obj.text).width / canvas.width;
-        // Position stays the same
-        obj.x = obj._origProps.x;
-        obj.y = obj._origProps.y;
-      } else if (
-        obj.type === "image" ||
-        obj.type === "signature-image" ||
-        obj.type === "stamp"
-      ) {
-        // Scale width and height in place (position stays the same)
+      } else if (obj.type === "image" || obj.type === "signature-image") {
+        // Scale image position and dimensions relative to anchor
+        obj.x = anchorX + (obj._origProps.x - anchorX) * scaleX;
+        obj.y = anchorY + (obj._origProps.y - anchorY) * scaleY;
         obj.width = obj._origProps.width * scaleX;
         obj.height = obj._origProps.height * scaleY;
-        obj.x = obj._origProps.x;
-        obj.y = obj._origProps.y;
+      } else if (obj.type === "stamp") {
+        // Stamps are centered, so scale center position and dimensions
+        obj.x = anchorX + (obj._origProps.x - anchorX) * scaleX;
+        obj.y = anchorY + (obj._origProps.y - anchorY) * scaleY;
+        obj.width = obj._origProps.width * scaleX;
+        obj.height = obj._origProps.height * scaleY;
       } else if (obj.type === "shape") {
-        // Scale shape coordinates around their own center
-        const origCenterX = (obj._origProps.startX + obj._origProps.endX) / 2;
-        const origCenterY = (obj._origProps.startY + obj._origProps.endY) / 2;
-
-        obj.startX =
-          origCenterX + (obj._origProps.startX - origCenterX) * scaleX;
-        obj.startY =
-          origCenterY + (obj._origProps.startY - origCenterY) * scaleY;
-        obj.endX = origCenterX + (obj._origProps.endX - origCenterX) * scaleX;
-        obj.endY = origCenterY + (obj._origProps.endY - origCenterY) * scaleY;
+        // Scale shape endpoints relative to anchor
+        obj.startX = anchorX + (obj._origProps.startX - anchorX) * scaleX;
+        obj.startY = anchorY + (obj._origProps.startY - anchorY) * scaleY;
+        obj.endX = anchorX + (obj._origProps.endX - anchorX) * scaleX;
+        obj.endY = anchorY + (obj._origProps.endY - anchorY) * scaleY;
       } else if (obj.points && obj.points.length > 0) {
-        // Scale pen strokes around their own center
-        let centerX = 0,
-          centerY = 0;
-        obj._origProps.points.forEach((pt) => {
-          centerX += pt.x;
-          centerY += pt.y;
-        });
-        centerX /= obj._origProps.points.length;
-        centerY /= obj._origProps.points.length;
-
+        // Scale pen stroke points relative to anchor
         obj.points = obj._origProps.points.map((pt) => ({
-          x: centerX + (pt.x - centerX) * scaleX,
-          y: centerY + (pt.y - centerY) * scaleY,
+          x: anchorX + (pt.x - anchorX) * scaleX,
+          y: anchorY + (pt.y - anchorY) * scaleY,
         }));
       }
     });

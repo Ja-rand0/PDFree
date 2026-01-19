@@ -1,9 +1,7 @@
 // Eraser tool functionality - traditional brush that erases as you drag
 
 function handleEraserStart(e, canvas, pageIndex) {
-  console.log("Eraser start called");
   const p = getCanvasPosition(e, canvas);
-  console.log("Eraser position:", p);
 
   // Start erasing immediately at the click point
   eraseAtPoint(pageIndex, p.x, p.y, 20, canvas.width, canvas.height);
@@ -23,7 +21,6 @@ function handleEraserStart(e, canvas, pageIndex) {
 function handleEraserMove(e, canvas, pageIndex, state) {
   if (!state.erasing || currentTool !== "eraser") return state;
 
-  console.log("Eraser moving");
   const p = getCanvasPosition(e, canvas);
 
   // Erase at current point
@@ -55,7 +52,6 @@ function handleEraserMove(e, canvas, pageIndex, state) {
 function handleEraserStop(canvas, pageIndex, state) {
   if (!state.erasing) return { erasing: false, eraserRadius: 20 };
 
-  console.log("Eraser stopped");
   // Final redraw without eraser preview
   redrawStrokes(
     canvas.getContext("2d"),
@@ -68,14 +64,8 @@ function handleEraserStop(canvas, pageIndex, state) {
 }
 
 function eraseAtPoint(pageIndex, x, y, radius, canvasWidth, canvasHeight) {
-  console.log("eraseAtPoint called at", x, y, "with radius", radius);
   const strokes = strokeHistory[pageIndex];
-  if (!strokes) {
-    console.log("No strokes found for page", pageIndex);
-    return;
-  }
-
-  console.log("Checking", strokes.length, "strokes");
+  if (!strokes) return;
 
   // Process each stroke
   for (let i = strokes.length - 1; i >= 0; i--) {
@@ -106,7 +96,6 @@ function eraseAtPoint(pageIndex, x, y, radius, canvasWidth, canvasHeight) {
         const deletedStroke = strokeHistory[pageIndex].splice(i, 1)[0];
         undoStacks[pageIndex].push({ type: "erase", stroke: deletedStroke });
         redoStacks[pageIndex].length = 0;
-        console.log("Stamp erased");
       }
       continue;
     }
@@ -143,7 +132,6 @@ function eraseAtPoint(pageIndex, x, y, radius, canvasWidth, canvasHeight) {
         const deletedStroke = strokeHistory[pageIndex].splice(i, 1)[0];
         undoStacks[pageIndex].push({ type: "erase", stroke: deletedStroke });
         redoStacks[pageIndex].length = 0;
-        console.log("Entire shape erased");
       } else if (
         newSegments.length === 1 &&
         newSegments[0].points.length === tempStroke.points.length
@@ -152,25 +140,18 @@ function eraseAtPoint(pageIndex, x, y, radius, canvasWidth, canvasHeight) {
         continue;
       } else {
         // Shape was split - convert segments back to shapes or pen strokes
-        console.log("Shape split into", newSegments.length, "segments");
-        console.log("Original shape type:", stroke.shapeType);
-        console.log("Segments:", newSegments);
-
         const deletedStroke = strokeHistory[pageIndex].splice(i, 1)[0];
         undoStacks[pageIndex].push({ type: "erase", stroke: deletedStroke });
         redoStacks[pageIndex].length = 0;
 
         // Add new segments as pen strokes (since split shapes become irregular)
-        newSegments.forEach((segment, idx) => {
+        newSegments.forEach((segment) => {
           const newStroke = {
             type: "pen",
             color: stroke.color,
             width: stroke.width,
             points: segment.points,
           };
-          console.log(
-            `Adding segment ${idx} with ${segment.points.length} points`
-          );
           strokeHistory[pageIndex].splice(i, 0, newStroke);
         });
       }
@@ -194,7 +175,6 @@ function eraseAtPoint(pageIndex, x, y, radius, canvasWidth, canvasHeight) {
       const deletedStroke = strokeHistory[pageIndex].splice(i, 1)[0];
       undoStacks[pageIndex].push({ type: "erase", stroke: deletedStroke });
       redoStacks[pageIndex].length = 0;
-      console.log("Entire stroke erased");
     } else if (
       newSegments.length === 1 &&
       newSegments[0].points.length === stroke.points.length
@@ -203,8 +183,6 @@ function eraseAtPoint(pageIndex, x, y, radius, canvasWidth, canvasHeight) {
       continue;
     } else {
       // Stroke was split into segments
-      console.log("Stroke split into", newSegments.length, "segments");
-
       // Remove original stroke
       const deletedStroke = strokeHistory[pageIndex].splice(i, 1)[0];
       undoStacks[pageIndex].push({ type: "erase", stroke: deletedStroke });

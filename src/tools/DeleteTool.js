@@ -195,29 +195,3 @@ function handleDeleteClick(e, canvas, pageIndex) {
     return;
   }
 }
-
-function checkStrokeClick(pageIndex, x, y, canvasWidth, canvasHeight) {
-  const strokes = strokeHistory[pageIndex];
-  if (!strokes) return null;
-
-  // Check in reverse order (most recent first)
-  for (let i = strokes.length - 1; i >= 0; i--) {
-    const stroke = strokes[i];
-    if (stroke.type !== "text" && stroke.points) {
-      // Check if click is near any point in the stroke
-      const hitDistance = 10; // pixels
-
-      for (let j = 0; j < stroke.points.length; j++) {
-        const point = stroke.points[j];
-        const px = point.x * canvasWidth;
-        const py = point.y * canvasHeight;
-
-        const distance = Math.sqrt((x - px) ** 2 + (y - py) ** 2);
-        if (distance <= hitDistance) {
-          return stroke;
-        }
-      }
-    }
-  }
-  return null;
-}
