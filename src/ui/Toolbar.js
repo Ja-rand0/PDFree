@@ -465,4 +465,67 @@ function initToolbar() {
     setStamp("urgent");
     document.getElementById("stampPopup").classList.add("hidden");
   });
+
+  // Redaction tool - show popup on hover
+  document.getElementById("redactionTool").addEventListener("mouseenter", (e) => {
+    const redactionPopup = document.getElementById("redactionPopup");
+    const redactionTool = document.getElementById("redactionTool");
+    const rect = redactionTool.getBoundingClientRect();
+    redactionPopup.style.top = `${rect.top}px`;
+    redactionPopup.classList.remove("hidden");
+  });
+
+  document.getElementById("redactionTool").addEventListener("mouseleave", (e) => {
+    setTimeout(() => {
+      const redactionPopup = document.getElementById("redactionPopup");
+      if (
+        !redactionPopup.matches(":hover") &&
+        !document.getElementById("redactionTool").matches(":hover")
+      ) {
+        redactionPopup.classList.add("hidden");
+      }
+    }, 100);
+  });
+
+  document.getElementById("redactionPopup").addEventListener("mouseenter", () => {
+    document.getElementById("redactionPopup").classList.remove("hidden");
+  });
+
+  document.getElementById("redactionPopup").addEventListener("mouseleave", () => {
+    document.getElementById("redactionPopup").classList.add("hidden");
+  });
+
+  // Redaction tool click handler
+  document.getElementById("redactionTool").addEventListener("click", (e) => {
+    currentTool = "redaction";
+    document.getElementById("redactionTool").classList.add("active");
+    document.getElementById("selectTool").classList.remove("active");
+    document.getElementById("moveTool").classList.remove("active");
+    document.getElementById("penTool").classList.remove("active");
+    document.getElementById("textTool").classList.remove("active");
+    document.getElementById("deleteTool").classList.remove("active");
+    document.getElementById("eraserTool").classList.remove("active");
+    document.getElementById("highlightTool").classList.remove("active");
+    document.getElementById("imageTool").classList.remove("active");
+    document.getElementById("shapeTool").classList.remove("active");
+    document.getElementById("signatureTool").classList.remove("active");
+    document.getElementById("stampTool").classList.remove("active");
+
+    document.getElementById("shapeSelector").classList.add("hidden");
+    document.getElementById("stampSelector").classList.add("hidden");
+
+    pages.forEach((p, i) =>
+      redrawStrokes(p.ctx, i, p.inkC.width, p.inkC.height)
+    );
+  });
+
+  // Redaction type selectors
+  document.getElementById("redactionBlackBar").addEventListener("click", () => {
+    setRedactionType("blackbar");
+    document.getElementById("redactionPopup").classList.add("hidden");
+  });
+  document.getElementById("redactionWhiteOut").addEventListener("click", () => {
+    setRedactionType("whiteout");
+    document.getElementById("redactionPopup").classList.add("hidden");
+  });
 }

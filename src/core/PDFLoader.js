@@ -556,6 +556,20 @@ function redrawStrokes(ctx, pageIndex, canvasWidth, canvasHeight) {
           handleSize
         );
       }
+    } else if (stroke.type === "redaction") {
+      // Draw redaction rectangle (black bar or white out)
+      const x = stroke.x * canvasWidth;
+      const y = stroke.y * canvasHeight;
+      const width = stroke.width * canvasWidth;
+      const height = stroke.height * canvasHeight;
+
+      if (stroke.redactionType === "blackbar") {
+        ctx.fillStyle = "#000000";
+      } else {
+        ctx.fillStyle = "#FFFFFF";
+      }
+
+      ctx.fillRect(x, y, width, height);
     } else if (stroke.type === "image") {
       // Draw image synchronously using pre-loaded object
       if (stroke.imgObject) {

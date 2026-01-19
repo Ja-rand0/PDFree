@@ -91,6 +91,12 @@ function attachCanvasListeners(canvas, pageIndex) {
       return;
     }
 
+    if (currentTool === "redaction") {
+      const redactionState = handleRedactionStart(e, canvas, pageIndex);
+      toolState = { ...toolState, ...redactionState };
+      return;
+    }
+
     if (currentTool === "pen") {
       const penState = handlePenStart(e, canvas, pageIndex);
       toolState = { ...toolState, ...penState };
@@ -129,6 +135,11 @@ function attachCanvasListeners(canvas, pageIndex) {
       return;
     }
 
+    if (currentTool === "redaction" && toolState.drawing) {
+      toolState = handleRedactionMove(e, canvas, pageIndex, toolState);
+      return;
+    }
+
     if (currentTool === "pen" && toolState.drawing) {
       toolState = handlePenMove(e, canvas, toolState);
     }
@@ -162,6 +173,11 @@ function attachCanvasListeners(canvas, pageIndex) {
 
     if (toolState.drawingShape) {
       toolState = handleShapeStop(canvas, pageIndex, toolState);
+      return;
+    }
+
+    if (currentTool === "redaction" && toolState.drawing) {
+      toolState = handleRedactionStop(canvas, pageIndex, toolState);
       return;
     }
 

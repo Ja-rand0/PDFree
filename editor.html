@@ -29,6 +29,7 @@
       <button id="shapeTool" class="tool-btn" title="Shapes">⬟</button>
       <button id="signatureTool" class="tool-btn" title="Signature">✍️</button>
       <button id="stampTool" class="tool-btn" title="Stamps">🏷️</button>
+      <button id="redactionTool" class="tool-btn" title="Redaction">▬</button>
     </div>
 
     <!-- Divider -->
@@ -79,6 +80,19 @@
       </button>
       <button id="stampUrgent" class="popup-btn popup-btn-orange">
         <span>⚠️</span> URGENT
+      </button>
+    </div>
+  </div>
+
+  <!-- Redaction popup selector (outside sidebar) -->
+  <div id="redactionPopup" class="hidden">
+    <div class="popup-title">Redaction Type</div>
+    <div class="popup-list">
+      <button id="redactionBlackBar" class="popup-btn popup-btn-gray">
+        <span>▬</span> Black Bar
+      </button>
+      <button id="redactionWhiteOut" class="popup-btn popup-btn-gray">
+        <span>▭</span> White Out
       </button>
     </div>
   </div>
@@ -146,6 +160,7 @@
   <script src="src/tools/ShapeTool.js"></script>
   <script src="src/tools/SignatureTool.js"></script>
   <script src="src/tools/StampTool.js"></script>
+  <script src="src/tools/RedactionTool.js"></script>
   <script src="src/tools/ZoomTool.js"></script>
 </body>
 
