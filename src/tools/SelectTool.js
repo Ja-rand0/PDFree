@@ -149,6 +149,66 @@ function getObjectBounds(obj, canvas) {
       right: x + w / 2,
       bottom: y + h / 2,
     };
+  } else if (obj.type === "checkbox") {
+    const x = obj.x * canvas.width;
+    const y = obj.y * canvas.height;
+    const size = obj.size * canvas.width;
+    return {
+      left: x,
+      top: y,
+      right: x + size,
+      bottom: y + size,
+    };
+  } else if (obj.type === "datestamp") {
+    const x = obj.x * canvas.width;
+    const y = obj.y * canvas.height;
+    const fontSize = obj.fontSize * canvas.height;
+    const ctx = document.createElement("canvas").getContext("2d");
+    ctx.font = `${fontSize}px Arial`;
+    const dateText = formatDate(obj.date, obj.format || "MM/DD/YYYY");
+    const textWidth = ctx.measureText(dateText).width;
+    return {
+      left: x,
+      top: y - fontSize,
+      right: x + textWidth,
+      bottom: y,
+    };
+  } else if (obj.type === "textfield") {
+    const x = obj.x * canvas.width;
+    const y = obj.y * canvas.height;
+    const width = obj.width * canvas.width;
+    const height = obj.height * canvas.height;
+    return {
+      left: x,
+      top: y,
+      right: x + width,
+      bottom: y + height,
+    };
+  } else if (obj.type === "comment") {
+    const x = obj.x * canvas.width;
+    const y = obj.y * canvas.height;
+    const iconSize = 30;
+    return {
+      left: x,
+      top: y,
+      right: x + iconSize,
+      bottom: y + iconSize,
+    };
+  } else if (obj.type === "watermark") {
+    const x = obj.x * canvas.width;
+    const y = obj.y * canvas.height;
+    const fontSize = obj.fontSize * canvas.height;
+    const tempCtx = document.createElement("canvas").getContext("2d");
+    tempCtx.font = `bold ${fontSize}px Arial`;
+    const textWidth = tempCtx.measureText(obj.text).width;
+    const halfWidth = textWidth / 2;
+    const halfHeight = fontSize / 2;
+    return {
+      left: x - halfWidth,
+      top: y - halfHeight,
+      right: x + halfWidth,
+      bottom: y + halfHeight,
+    };
   } else if (obj.points && obj.points.length > 0) {
     // Handle pen strokes and highlights (may not have a type property, or type is "pen"/"highlight")
     let minX = Infinity,
@@ -232,13 +292,53 @@ function handleSelectStart(e, canvas, pageIndex) {
     canvas.width,
     canvas.height
   );
+  const clickedCheckbox = checkCheckboxClick(
+    pageIndex,
+    p.x,
+    p.y,
+    canvas.width,
+    canvas.height
+  );
+  const clickedDateStamp = checkDateStampClick(
+    pageIndex,
+    p.x,
+    p.y,
+    canvas.width,
+    canvas.height
+  );
+  const clickedTextField = checkTextFieldClick(
+    pageIndex,
+    p.x,
+    p.y,
+    canvas.width,
+    canvas.height
+  );
+  const clickedComment = checkCommentClick(
+    pageIndex,
+    p.x,
+    p.y,
+    canvas.width,
+    canvas.height
+  );
+  const clickedWatermark = checkWatermarkClick(
+    pageIndex,
+    p.x,
+    p.y,
+    canvas.width,
+    canvas.height
+  );
   const clickedObject =
     clickedText ||
     clickedImage ||
     clickedShape ||
     clickedStamp ||
     clickedSignature ||
-    clickedPenStroke;
+    clickedPenStroke ||
+    clickedCheckbox ||
+    clickedDateStamp ||
+    clickedTextField ||
+    clickedComment ||
+    clickedWatermark;
 
   // Multi-select mode
   if (selectedObjects.length > 1) {
@@ -430,6 +530,20 @@ function handleSelectStart(e, canvas, pageIndex) {
 
   // Select object
   if (clickedObject) {
+    // If clicking on a text field, prompt for text input
+    if (clickedTextField) {
+      const newText = prompt("Enter text for field:", clickedTextField.text || "");
+      if (newText !== null) {
+        clickedTextField.text = newText;
+        redrawStrokes(
+          canvas.getContext("2d"),
+          pageIndex,
+          canvas.width,
+          canvas.height
+        );
+      }
+    }
+
     selectedText = clickedText;
     selectedImage = clickedImage;
     selectedShape = clickedShape;
@@ -559,6 +673,36 @@ function handleSelectMove(e, canvas, pageIndex, state) {
             endX: obj.endX,
             endY: obj.endY,
           };
+        } else if (obj.type === "checkbox") {
+          obj._origProps = {
+            x: obj.x,
+            y: obj.y,
+            size: obj.size,
+          };
+        } else if (obj.type === "datestamp") {
+          obj._origProps = {
+            x: obj.x,
+            y: obj.y,
+            fontSize: obj.fontSize,
+          };
+        } else if (obj.type === "textfield") {
+          obj._origProps = {
+            x: obj.x,
+            y: obj.y,
+            width: obj.width,
+            height: obj.height,
+            fontSize: obj.fontSize,
+          };
+        } else if (obj.type === "comment") {
+          obj._origProps = {
+            x: obj.x,
+            y: obj.y,
+          };
+        } else if (obj.type === "watermark") {
+          obj._origProps = {
+            x: obj.x,
+            y: obj.y,
+          };
         } else if (obj.points && obj.points.length > 0) {
           obj._origProps = {
             points: obj.points.map((pt) => ({ x: pt.x, y: pt.y })),
@@ -596,6 +740,34 @@ function handleSelectMove(e, canvas, pageIndex, state) {
         obj.startY = anchorY + (obj._origProps.startY - anchorY) * scaleY;
         obj.endX = anchorX + (obj._origProps.endX - anchorX) * scaleX;
         obj.endY = anchorY + (obj._origProps.endY - anchorY) * scaleY;
+      } else if (obj.type === "checkbox") {
+        // Scale checkbox position and size relative to anchor
+        const avgScale = (scaleX + scaleY) / 2;
+        obj.x = anchorX + (obj._origProps.x - anchorX) * scaleX;
+        obj.y = anchorY + (obj._origProps.y - anchorY) * scaleY;
+        obj.size = obj._origProps.size * avgScale;
+      } else if (obj.type === "datestamp") {
+        // Scale datestamp position and font size relative to anchor
+        const avgScale = (scaleX + scaleY) / 2;
+        obj.x = anchorX + (obj._origProps.x - anchorX) * scaleX;
+        obj.y = anchorY + (obj._origProps.y - anchorY) * scaleY;
+        obj.fontSize = obj._origProps.fontSize * avgScale;
+      } else if (obj.type === "textfield") {
+        // Scale textfield position, dimensions, and font size relative to anchor
+        const avgScale = (scaleX + scaleY) / 2;
+        obj.x = anchorX + (obj._origProps.x - anchorX) * scaleX;
+        obj.y = anchorY + (obj._origProps.y - anchorY) * scaleY;
+        obj.width = obj._origProps.width * scaleX;
+        obj.height = obj._origProps.height * scaleY;
+        obj.fontSize = obj._origProps.fontSize * avgScale;
+      } else if (obj.type === "comment") {
+        // Scale comment position relative to anchor
+        obj.x = anchorX + (obj._origProps.x - anchorX) * scaleX;
+        obj.y = anchorY + (obj._origProps.y - anchorY) * scaleY;
+      } else if (obj.type === "watermark") {
+        // Scale watermark position relative to anchor
+        obj.x = anchorX + (obj._origProps.x - anchorX) * scaleX;
+        obj.y = anchorY + (obj._origProps.y - anchorY) * scaleY;
       } else if (obj.points && obj.points.length > 0) {
         // Scale pen stroke points relative to anchor
         obj.points = obj._origProps.points.map((pt) => ({
@@ -618,7 +790,10 @@ function handleSelectMove(e, canvas, pageIndex, state) {
         obj.type === "text" ||
         obj.type === "image" ||
         obj.type === "signature-image" ||
-        obj.type === "stamp"
+        obj.type === "stamp" ||
+        obj.type === "checkbox" ||
+        obj.type === "datestamp" ||
+        obj.type === "textfield"
       ) {
         if (!obj._origX) obj._origX = obj.x;
         if (!obj._origY) obj._origY = obj.y;

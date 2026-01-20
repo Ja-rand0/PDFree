@@ -91,6 +91,32 @@ function attachCanvasListeners(canvas, pageIndex) {
       return;
     }
 
+    if (currentTool === "checkbox") {
+      handleCheckboxClick(e, canvas, pageIndex);
+      return;
+    }
+
+    if (currentTool === "datestamp") {
+      handleDateStampClick(e, canvas, pageIndex);
+      return;
+    }
+
+    if (currentTool === "textfield") {
+      const textFieldState = handleTextFieldStart(e, canvas, pageIndex);
+      toolState = { ...toolState, ...textFieldState };
+      return;
+    }
+
+    if (currentTool === "comment") {
+      handleCommentClick(e, canvas, pageIndex);
+      return;
+    }
+
+    if (currentTool === "watermark") {
+      handleWatermarkClick(e, canvas, pageIndex);
+      return;
+    }
+
     if (currentTool === "redaction") {
       const redactionState = handleRedactionStart(e, canvas, pageIndex);
       toolState = { ...toolState, ...redactionState };
@@ -104,6 +130,41 @@ function attachCanvasListeners(canvas, pageIndex) {
   }
 
   function move(e) {
+    // Always track mouse position and check for comment hover
+    const p = getCanvasPosition(e, canvas);
+    lastMousePos = { x: p.x, y: p.y };
+
+    // Check if hovering over a comment
+    const prevHoveredComment = hoveredComment;
+    hoveredComment = null;
+
+    const strokes = strokeHistory[pageIndex];
+    if (strokes) {
+      for (let i = strokes.length - 1; i >= 0; i--) {
+        const stroke = strokes[i];
+        if (stroke.type === "comment") {
+          const commentX = stroke.x * canvas.width;
+          const commentY = stroke.y * canvas.height;
+          const iconSize = 30;
+
+          if (
+            p.x >= commentX &&
+            p.x <= commentX + iconSize &&
+            p.y >= commentY &&
+            p.y <= commentY + iconSize
+          ) {
+            hoveredComment = stroke;
+            break;
+          }
+        }
+      }
+    }
+
+    // Redraw if hover state changed
+    if (prevHoveredComment !== hoveredComment) {
+      redrawStrokes(canvas.getContext("2d"), pageIndex, canvas.width, canvas.height);
+    }
+
     if (
       currentTool === "select" &&
       (toolState.resizing ||
@@ -132,6 +193,11 @@ function attachCanvasListeners(canvas, pageIndex) {
 
     if (currentTool === "shape" && toolState.drawingShape) {
       toolState = handleShapeMove(e, canvas, pageIndex, toolState);
+      return;
+    }
+
+    if (currentTool === "textfield" && toolState.drawing) {
+      toolState = handleTextFieldMove(e, canvas, pageIndex, toolState);
       return;
     }
 
@@ -173,6 +239,11 @@ function attachCanvasListeners(canvas, pageIndex) {
 
     if (toolState.drawingShape) {
       toolState = handleShapeStop(canvas, pageIndex, toolState);
+      return;
+    }
+
+    if (currentTool === "textfield" && toolState.drawing) {
+      toolState = handleTextFieldStop(canvas, pageIndex, toolState);
       return;
     }
 

@@ -570,6 +570,154 @@ function redrawStrokes(ctx, pageIndex, canvasWidth, canvasHeight) {
       }
 
       ctx.fillRect(x, y, width, height);
+    } else if (stroke.type === "checkbox") {
+      // Draw checkbox
+      const x = stroke.x * canvasWidth;
+      const y = stroke.y * canvasHeight;
+      const size = stroke.size * canvasWidth;
+
+      // Draw box
+      ctx.strokeStyle = "#000000";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x, y, size, size);
+
+      // Draw checkmark if checked
+      if (stroke.checked) {
+        ctx.strokeStyle = "#000000";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(x + size * 0.2, y + size * 0.5);
+        ctx.lineTo(x + size * 0.4, y + size * 0.75);
+        ctx.lineTo(x + size * 0.8, y + size * 0.25);
+        ctx.stroke();
+      }
+    } else if (stroke.type === "datestamp") {
+      // Draw date stamp
+      const x = stroke.x * canvasWidth;
+      const y = stroke.y * canvasHeight;
+      const fontSize = stroke.fontSize * canvasHeight;
+
+      const dateText = formatDate(stroke.date, stroke.format || "MM/DD/YYYY");
+
+      ctx.font = `${fontSize}px Arial`;
+      ctx.fillStyle = stroke.color || "#000000";
+      ctx.fillText(dateText, x, y);
+    } else if (stroke.type === "textfield") {
+      // Draw text field box
+      const x = stroke.x * canvasWidth;
+      const y = stroke.y * canvasHeight;
+      const width = stroke.width * canvasWidth;
+      const height = stroke.height * canvasHeight;
+      const fontSize = stroke.fontSize * canvasHeight;
+
+      // Draw light blue background
+      ctx.fillStyle = "rgba(173, 216, 230, 0.3)"; // Light blue with opacity
+      ctx.fillRect(x, y, width, height);
+
+      // Draw border
+      ctx.strokeStyle = "#0000FF";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(x, y, width, height);
+
+      // Draw text inside if present
+      if (stroke.text) {
+        ctx.font = `${fontSize}px Arial`;
+        ctx.fillStyle = stroke.color || "#000000";
+        ctx.fillText(stroke.text, x + 5, y + fontSize + 5);
+      }
+    } else if (stroke.type === "comment") {
+      // Draw sticky note icon
+      const x = stroke.x * canvasWidth;
+      const y = stroke.y * canvasHeight;
+      const iconSize = 30;
+
+      // Draw note background
+      ctx.fillStyle = stroke.color || "#FFEB3B";
+      ctx.fillRect(x, y, iconSize, iconSize);
+
+      // Draw fold
+      ctx.fillStyle = "rgba(0,0,0,0.2)";
+      ctx.beginPath();
+      ctx.moveTo(x + iconSize - 8, y);
+      ctx.lineTo(x + iconSize, y + 8);
+      ctx.lineTo(x + iconSize, y);
+      ctx.closePath();
+      ctx.fill();
+
+      // Draw comment icon
+      ctx.fillStyle = "#000000";
+      ctx.font = "16px Arial";
+      ctx.fillText("💬", x + 7, y + 20);
+
+      // Only draw the comment popup when hovering
+      if (stroke.content && hoveredComment === stroke) {
+        const padding = 10;
+        const maxWidth = 250;
+        const lineHeight = 18;
+        const fontSize = 14;
+
+        ctx.font = `${fontSize}px Arial`;
+
+        // Word wrap the content
+        const words = stroke.content.split(" ");
+        const lines = [];
+        let currentLine = "";
+
+        words.forEach((word) => {
+          const testLine = currentLine ? currentLine + " " + word : word;
+          const metrics = ctx.measureText(testLine);
+          if (metrics.width > maxWidth - padding * 2 && currentLine) {
+            lines.push(currentLine);
+            currentLine = word;
+          } else {
+            currentLine = testLine;
+          }
+        });
+        if (currentLine) {
+          lines.push(currentLine);
+        }
+
+        const popupHeight = lines.length * lineHeight + padding * 2 + 10;
+        const popupX = x + iconSize + 5;
+        const popupY = y;
+
+        // Draw popup background
+        ctx.fillStyle = stroke.color || "#FFEB3B";
+        ctx.fillRect(popupX, popupY, maxWidth, popupHeight);
+
+        // Draw popup border
+        ctx.strokeStyle = "rgba(0,0,0,0.3)";
+        ctx.lineWidth = 1;
+        ctx.strokeRect(popupX, popupY, maxWidth, popupHeight);
+
+        // Draw text content
+        ctx.fillStyle = "#000000";
+        ctx.font = `${fontSize}px Arial`;
+        lines.forEach((line, i) => {
+          ctx.fillText(
+            line,
+            popupX + padding,
+            popupY + padding + (i + 1) * lineHeight
+          );
+        });
+      }
+    } else if (stroke.type === "watermark") {
+      // Draw watermark
+      const x = stroke.x * canvasWidth;
+      const y = stroke.y * canvasHeight;
+      const fontSize = stroke.fontSize * canvasHeight;
+
+      ctx.save();
+      ctx.globalAlpha = stroke.opacity || 0.3;
+      ctx.fillStyle = stroke.color || "#888888";
+      ctx.font = `bold ${fontSize}px Arial`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+
+      ctx.translate(x, y);
+      ctx.rotate((stroke.rotation * Math.PI) / 180);
+      ctx.fillText(stroke.text, 0, 0);
+      ctx.restore();
     } else if (stroke.type === "image") {
       // Draw image synchronously using pre-loaded object
       if (stroke.imgObject) {
@@ -862,6 +1010,66 @@ function redrawStrokes(ctx, pageIndex, canvasWidth, canvasHeight) {
           top: y - h / 2,
           right: x + w / 2,
           bottom: y + h / 2,
+        };
+      } else if (obj.type === "checkbox") {
+        const x = obj.x * canvasWidth;
+        const y = obj.y * canvasHeight;
+        const size = obj.size * canvasWidth;
+        objBounds = {
+          left: x,
+          top: y,
+          right: x + size,
+          bottom: y + size,
+        };
+      } else if (obj.type === "datestamp") {
+        const x = obj.x * canvasWidth;
+        const y = obj.y * canvasHeight;
+        const fontSize = obj.fontSize * canvasHeight;
+        const tempCtx = document.createElement("canvas").getContext("2d");
+        tempCtx.font = `${fontSize}px Arial`;
+        const dateText = formatDate(obj.date, obj.format || "MM/DD/YYYY");
+        const textWidth = tempCtx.measureText(dateText).width;
+        objBounds = {
+          left: x,
+          top: y - fontSize,
+          right: x + textWidth,
+          bottom: y,
+        };
+      } else if (obj.type === "textfield") {
+        const x = obj.x * canvasWidth;
+        const y = obj.y * canvasHeight;
+        const width = obj.width * canvasWidth;
+        const height = obj.height * canvasHeight;
+        objBounds = {
+          left: x,
+          top: y,
+          right: x + width,
+          bottom: y + height,
+        };
+      } else if (obj.type === "comment") {
+        const x = obj.x * canvasWidth;
+        const y = obj.y * canvasHeight;
+        const iconSize = 30;
+        objBounds = {
+          left: x,
+          top: y,
+          right: x + iconSize,
+          bottom: y + iconSize,
+        };
+      } else if (obj.type === "watermark") {
+        const x = obj.x * canvasWidth;
+        const y = obj.y * canvasHeight;
+        const fontSize = obj.fontSize * canvasHeight;
+        const tempCtx = document.createElement("canvas").getContext("2d");
+        tempCtx.font = `bold ${fontSize}px Arial`;
+        const textWidth = tempCtx.measureText(obj.text).width;
+        const halfWidth = textWidth / 2;
+        const halfHeight = fontSize / 2;
+        objBounds = {
+          left: x - halfWidth,
+          top: y - halfHeight,
+          right: x + halfWidth,
+          bottom: y + halfHeight,
         };
       } else if (obj.points && obj.points.length > 0) {
         // Handle pen strokes (may not have type property)

@@ -194,4 +194,132 @@ function handleDeleteClick(e, canvas, pageIndex) {
     }
     return;
   }
+
+  // Check if clicking on checkbox
+  const clickedCheckbox = checkCheckboxClick(
+    pageIndex,
+    p.x,
+    p.y,
+    canvas.width,
+    canvas.height
+  );
+
+  if (clickedCheckbox) {
+    const idx = strokeHistory[pageIndex].indexOf(clickedCheckbox);
+    if (idx > -1) {
+      const deletedStroke = strokeHistory[pageIndex].splice(idx, 1)[0];
+      undoStacks[pageIndex].push({ type: "delete", stroke: deletedStroke });
+      redoStacks[pageIndex].length = 0;
+
+      redrawStrokes(
+        canvas.getContext("2d"),
+        pageIndex,
+        canvas.width,
+        canvas.height
+      );
+    }
+    return;
+  }
+
+  // Check if clicking on date stamp
+  const clickedDateStamp = checkDateStampClick(
+    pageIndex,
+    p.x,
+    p.y,
+    canvas.width,
+    canvas.height
+  );
+
+  if (clickedDateStamp) {
+    const idx = strokeHistory[pageIndex].indexOf(clickedDateStamp);
+    if (idx > -1) {
+      const deletedStroke = strokeHistory[pageIndex].splice(idx, 1)[0];
+      undoStacks[pageIndex].push({ type: "delete", stroke: deletedStroke });
+      redoStacks[pageIndex].length = 0;
+
+      redrawStrokes(
+        canvas.getContext("2d"),
+        pageIndex,
+        canvas.width,
+        canvas.height
+      );
+    }
+    return;
+  }
+
+  const clickedTextField = checkTextFieldClick(
+    pageIndex,
+    p.x,
+    p.y,
+    canvas.width,
+    canvas.height
+  );
+
+  if (clickedTextField) {
+    const idx = strokeHistory[pageIndex].indexOf(clickedTextField);
+    if (idx > -1) {
+      const deletedStroke = strokeHistory[pageIndex].splice(idx, 1)[0];
+      undoStacks[pageIndex].push({ type: "delete", stroke: deletedStroke });
+      redoStacks[pageIndex].length = 0;
+
+      redrawStrokes(
+        canvas.getContext("2d"),
+        pageIndex,
+        canvas.width,
+        canvas.height
+      );
+    }
+    return;
+  }
+
+  // Check if clicking on comment
+  const clickedComment = checkCommentClick(
+    pageIndex,
+    p.x,
+    p.y,
+    canvas.width,
+    canvas.height
+  );
+
+  if (clickedComment) {
+    const idx = strokeHistory[pageIndex].indexOf(clickedComment);
+    if (idx > -1) {
+      const deletedStroke = strokeHistory[pageIndex].splice(idx, 1)[0];
+      undoStacks[pageIndex].push({ type: "delete", stroke: deletedStroke });
+      redoStacks[pageIndex].length = 0;
+
+      redrawStrokes(
+        canvas.getContext("2d"),
+        pageIndex,
+        canvas.width,
+        canvas.height
+      );
+    }
+    return;
+  }
+
+  const clickedWatermark = checkWatermarkClick(
+    pageIndex,
+    p.x,
+    p.y,
+    canvas.width,
+    canvas.height
+  );
+
+  if (clickedWatermark) {
+    const idx = strokeHistory[pageIndex].indexOf(clickedWatermark);
+    if (idx > -1) {
+      const deletedStroke = strokeHistory[pageIndex].splice(idx, 1)[0];
+      undoStacks[pageIndex].push({ type: "delete", stroke: deletedStroke });
+      redoStacks[pageIndex].length = 0;
+
+      redrawStrokes(
+        canvas.getContext("2d"),
+        pageIndex,
+        canvas.width,
+        canvas.height
+      );
+    }
+    return;
+  }
 }

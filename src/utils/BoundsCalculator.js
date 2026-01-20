@@ -64,6 +64,76 @@ function getObjectBounds(obj, canvas) {
     };
   }
 
+  if (obj.type === "checkbox") {
+    const x = obj.x * canvas.width;
+    const y = obj.y * canvas.height;
+    const size = obj.size * canvas.width;
+    return {
+      left: x,
+      top: y,
+      right: x + size,
+      bottom: y + size,
+    };
+  }
+
+  if (obj.type === "datestamp") {
+    const x = obj.x * canvas.width;
+    const y = obj.y * canvas.height;
+    const fontSize = obj.fontSize * canvas.height;
+    const ctx = document.createElement("canvas").getContext("2d");
+    ctx.font = `${fontSize}px Arial`;
+    const dateText = formatDate(obj.date, obj.format || "MM/DD/YYYY");
+    const textWidth = ctx.measureText(dateText).width;
+    return {
+      left: x,
+      top: y - fontSize,
+      right: x + textWidth,
+      bottom: y,
+    };
+  }
+
+  if (obj.type === "textfield") {
+    const x = obj.x * canvas.width;
+    const y = obj.y * canvas.height;
+    const width = obj.width * canvas.width;
+    const height = obj.height * canvas.height;
+    return {
+      left: x,
+      top: y,
+      right: x + width,
+      bottom: y + height,
+    };
+  }
+
+  if (obj.type === "comment") {
+    const x = obj.x * canvas.width;
+    const y = obj.y * canvas.height;
+    const iconSize = 30;
+    return {
+      left: x,
+      top: y,
+      right: x + iconSize,
+      bottom: y + iconSize,
+    };
+  }
+
+  if (obj.type === "watermark") {
+    const x = obj.x * canvas.width;
+    const y = obj.y * canvas.height;
+    const fontSize = obj.fontSize * canvas.height;
+    const tempCtx = document.createElement("canvas").getContext("2d");
+    tempCtx.font = `bold ${fontSize}px Arial`;
+    const textWidth = tempCtx.measureText(obj.text).width;
+    const halfWidth = textWidth / 2;
+    const halfHeight = fontSize / 2;
+    return {
+      left: x - halfWidth,
+      top: y - halfHeight,
+      right: x + halfWidth,
+      bottom: y + halfHeight,
+    };
+  }
+
   // Pen strokes, highlights, signatures with points
   if (obj.points && obj.points.length > 0) {
     let minX = Infinity,

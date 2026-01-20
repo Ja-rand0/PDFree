@@ -74,6 +74,112 @@ function eraseAtPoint(pageIndex, x, y, radius, canvasWidth, canvasHeight) {
     // Skip text objects (use delete tool for those)
     if (stroke.type === "text") continue;
 
+    // Handle checkboxes - erase entirely when touched
+    if (stroke.type === "checkbox") {
+      const checkboxX = stroke.x * canvasWidth;
+      const checkboxY = stroke.y * canvasHeight;
+      const checkboxSize = stroke.size * canvasWidth;
+
+      const closestX = Math.max(checkboxX, Math.min(x, checkboxX + checkboxSize));
+      const closestY = Math.max(checkboxY, Math.min(y, checkboxY + checkboxSize));
+      const distance = Math.sqrt((x - closestX) ** 2 + (y - closestY) ** 2);
+
+      if (distance <= radius) {
+        const deletedStroke = strokeHistory[pageIndex].splice(i, 1)[0];
+        undoStacks[pageIndex].push({ type: "erase", stroke: deletedStroke });
+        redoStacks[pageIndex].length = 0;
+      }
+      continue;
+    }
+
+    // Handle date stamps - erase entirely when touched
+    if (stroke.type === "datestamp") {
+      const dateX = stroke.x * canvasWidth;
+      const dateY = stroke.y * canvasHeight;
+      const fontSize = stroke.fontSize * canvasHeight;
+
+      const ctx = document.createElement('canvas').getContext('2d');
+      ctx.font = `${fontSize}px Arial`;
+      const dateText = formatDate(stroke.date, stroke.format || "MM/DD/YYYY");
+      const textWidth = ctx.measureText(dateText).width;
+
+      const left = dateX;
+      const right = dateX + textWidth;
+      const top = dateY - fontSize;
+      const bottom = dateY;
+
+      const closestX = Math.max(left, Math.min(x, right));
+      const closestY = Math.max(top, Math.min(y, bottom));
+      const distance = Math.sqrt((x - closestX) ** 2 + (y - closestY) ** 2);
+
+      if (distance <= radius) {
+        const deletedStroke = strokeHistory[pageIndex].splice(i, 1)[0];
+        undoStacks[pageIndex].push({ type: "erase", stroke: deletedStroke });
+        redoStacks[pageIndex].length = 0;
+      }
+      continue;
+    }
+
+    // Handle text fields - erase entirely when touched
+    if (stroke.type === "textfield") {
+      const fieldX = stroke.x * canvasWidth;
+      const fieldY = stroke.y * canvasHeight;
+      const fieldWidth = stroke.width * canvasWidth;
+      const fieldHeight = stroke.height * canvasHeight;
+
+      const closestX = Math.max(fieldX, Math.min(x, fieldX + fieldWidth));
+      const closestY = Math.max(fieldY, Math.min(y, fieldY + fieldHeight));
+      const distance = Math.sqrt((x - closestX) ** 2 + (y - closestY) ** 2);
+
+      if (distance <= radius) {
+        const deletedStroke = strokeHistory[pageIndex].splice(i, 1)[0];
+        undoStacks[pageIndex].push({ type: "erase", stroke: deletedStroke });
+        redoStacks[pageIndex].length = 0;
+      }
+      continue;
+    }
+
+    // Handle comments - erase entirely when touched
+    if (stroke.type === "comment") {
+      const commentX = stroke.x * canvasWidth;
+      const commentY = stroke.y * canvasHeight;
+      const iconSize = 30;
+
+      const closestX = Math.max(commentX, Math.min(x, commentX + iconSize));
+      const closestY = Math.max(commentY, Math.min(y, commentY + iconSize));
+      const distance = Math.sqrt((x - closestX) ** 2 + (y - closestY) ** 2);
+
+      if (distance <= radius) {
+        const deletedStroke = strokeHistory[pageIndex].splice(i, 1)[0];
+        undoStacks[pageIndex].push({ type: "erase", stroke: deletedStroke });
+        redoStacks[pageIndex].length = 0;
+      }
+      continue;
+    }
+
+    // Handle watermarks - erase entirely when touched
+    if (stroke.type === "watermark") {
+      const watermarkX = stroke.x * canvasWidth;
+      const watermarkY = stroke.y * canvasHeight;
+      const fontSize = stroke.fontSize * canvasHeight;
+      const tempCtx = document.createElement("canvas").getContext("2d");
+      tempCtx.font = `bold ${fontSize}px Arial`;
+      const textWidth = tempCtx.measureText(stroke.text).width;
+      const halfWidth = textWidth / 2;
+      const halfHeight = fontSize / 2;
+
+      const closestX = Math.max(watermarkX - halfWidth, Math.min(x, watermarkX + halfWidth));
+      const closestY = Math.max(watermarkY - halfHeight, Math.min(y, watermarkY + halfHeight));
+      const distance = Math.sqrt((x - closestX) ** 2 + (y - closestY) ** 2);
+
+      if (distance <= radius) {
+        const deletedStroke = strokeHistory[pageIndex].splice(i, 1)[0];
+        undoStacks[pageIndex].push({ type: "erase", stroke: deletedStroke });
+        redoStacks[pageIndex].length = 0;
+      }
+      continue;
+    }
+
     // Handle stamps - erase entirely when touched
     if (stroke.type === "stamp") {
       const stampX = stroke.x * canvasWidth;

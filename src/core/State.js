@@ -16,7 +16,9 @@ let pdfBytes,
   selectedSignature = null,
   selectedStroke = null,
   selectedObjects = [], // Array for multi-select
-  selectedPageIndex = null;
+  selectedPageIndex = null,
+  hoveredComment = null, // Track hovered comment for popup display
+  lastMousePos = { x: 0, y: 0 }; // Track mouse position for hover detection
 
 // Store strokes as vector data
 const strokeHistory = [];

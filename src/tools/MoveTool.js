@@ -109,6 +109,109 @@ function handleMoveStart(e, canvas, pageIndex) {
     };
   }
 
+  // Check if clicking on checkbox
+  const clickedCheckbox = checkCheckboxClick(
+    pageIndex,
+    p.x,
+    p.y,
+    canvas.width,
+    canvas.height
+  );
+
+  if (clickedCheckbox) {
+    return {
+      moving: true,
+      movingObject: clickedCheckbox,
+      dragStartPos: p,
+      originalProps: {
+        x: clickedCheckbox.x,
+        y: clickedCheckbox.y,
+      },
+    };
+  }
+
+  // Check if clicking on date stamp
+  const clickedDateStamp = checkDateStampClick(
+    pageIndex,
+    p.x,
+    p.y,
+    canvas.width,
+    canvas.height
+  );
+
+  if (clickedDateStamp) {
+    return {
+      moving: true,
+      movingObject: clickedDateStamp,
+      dragStartPos: p,
+      originalProps: {
+        x: clickedDateStamp.x,
+        y: clickedDateStamp.y,
+      },
+    };
+  }
+
+  const clickedTextField = checkTextFieldClick(
+    pageIndex,
+    p.x,
+    p.y,
+    canvas.width,
+    canvas.height
+  );
+
+  if (clickedTextField) {
+    return {
+      moving: true,
+      movingObject: clickedTextField,
+      dragStartPos: p,
+      originalProps: {
+        x: clickedTextField.x,
+        y: clickedTextField.y,
+      },
+    };
+  }
+
+  // Check if clicking on comment
+  const clickedComment = checkCommentClick(
+    pageIndex,
+    p.x,
+    p.y,
+    canvas.width,
+    canvas.height
+  );
+
+  if (clickedComment) {
+    return {
+      moving: true,
+      movingObject: clickedComment,
+      dragStartPos: p,
+      originalProps: {
+        x: clickedComment.x,
+        y: clickedComment.y,
+      },
+    };
+  }
+
+  const clickedWatermark = checkWatermarkClick(
+    pageIndex,
+    p.x,
+    p.y,
+    canvas.width,
+    canvas.height
+  );
+
+  if (clickedWatermark) {
+    return {
+      moving: true,
+      movingObject: clickedWatermark,
+      dragStartPos: p,
+      originalProps: {
+        x: clickedWatermark.x,
+        y: clickedWatermark.y,
+      },
+    };
+  }
+
   return { moving: false };
 }
 
@@ -137,6 +240,10 @@ function handleMoveMove(e, canvas, pageIndex, state) {
     state.movingObject.endY = state.originalProps.endY + dy;
   } else if (state.movingObject.type === "stamp") {
     // Move stamp
+    state.movingObject.x = state.originalProps.x + dx;
+    state.movingObject.y = state.originalProps.y + dy;
+  } else if (state.movingObject.type === "checkbox" || state.movingObject.type === "datestamp" || state.movingObject.type === "textfield" || state.movingObject.type === "comment" || state.movingObject.type === "watermark") {
+    // Move checkbox, date stamp, text field, comment, or watermark
     state.movingObject.x = state.originalProps.x + dx;
     state.movingObject.y = state.originalProps.y + dy;
   } else if (state.movingObject.points) {

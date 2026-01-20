@@ -221,8 +221,122 @@ function checkStrokeClick(pageIndex, x, y, canvasWidth, canvasHeight) {
 }
 
 /**
+ * Check if a click hits a checkbox
+ */
+function checkCheckboxClick(pageIndex, x, y, canvasWidth, canvasHeight) {
+  const strokes = strokeHistory[pageIndex];
+  if (!strokes) return null;
+
+  for (let i = strokes.length - 1; i >= 0; i--) {
+    const stroke = strokes[i];
+    if (stroke.type === "checkbox") {
+      const checkboxX = stroke.x * canvasWidth;
+      const checkboxY = stroke.y * canvasHeight;
+      const checkboxSize = stroke.size * canvasWidth;
+
+      if (
+        x >= checkboxX &&
+        x <= checkboxX + checkboxSize &&
+        y >= checkboxY &&
+        y <= checkboxY + checkboxSize
+      ) {
+        return stroke;
+      }
+    }
+  }
+  return null;
+}
+
+/**
+ * Check if a click hits a date stamp
+ */
+function checkDateStampClick(pageIndex, x, y, canvasWidth, canvasHeight) {
+  const strokes = strokeHistory[pageIndex];
+  if (!strokes) return null;
+
+  for (let i = strokes.length - 1; i >= 0; i--) {
+    const stroke = strokes[i];
+    if (stroke.type === "datestamp") {
+      const dateX = stroke.x * canvasWidth;
+      const dateY = stroke.y * canvasHeight;
+      const fontSize = stroke.fontSize * canvasHeight;
+
+      const ctx = document.createElement('canvas').getContext('2d');
+      ctx.font = `${fontSize}px Arial`;
+      const dateText = formatDate(stroke.date, stroke.format || "MM/DD/YYYY");
+      const textWidth = ctx.measureText(dateText).width;
+
+      if (
+        x >= dateX &&
+        x <= dateX + textWidth &&
+        y >= dateY - fontSize &&
+        y <= dateY
+      ) {
+        return stroke;
+      }
+    }
+  }
+  return null;
+}
+
+/**
+ * Check if a click hits a text field
+ */
+function checkTextFieldClick(pageIndex, x, y, canvasWidth, canvasHeight) {
+  const strokes = strokeHistory[pageIndex];
+  if (!strokes) return null;
+
+  for (let i = strokes.length - 1; i >= 0; i--) {
+    const stroke = strokes[i];
+    if (stroke.type === "textfield") {
+      const fieldX = stroke.x * canvasWidth;
+      const fieldY = stroke.y * canvasHeight;
+      const fieldWidth = stroke.width * canvasWidth;
+      const fieldHeight = stroke.height * canvasHeight;
+
+      if (
+        x >= fieldX &&
+        x <= fieldX + fieldWidth &&
+        y >= fieldY &&
+        y <= fieldY + fieldHeight
+      ) {
+        return stroke;
+      }
+    }
+  }
+  return null;
+}
+
+/**
+ * Check if a click hits a comment
+ */
+function checkCommentClick(pageIndex, x, y, canvasWidth, canvasHeight) {
+  const strokes = strokeHistory[pageIndex];
+  if (!strokes) return null;
+
+  for (let i = strokes.length - 1; i >= 0; i--) {
+    const stroke = strokes[i];
+    if (stroke.type === "comment") {
+      const commentX = stroke.x * canvasWidth;
+      const commentY = stroke.y * canvasHeight;
+      const iconSize = 30;
+
+      if (
+        x >= commentX &&
+        x <= commentX + iconSize &&
+        y >= commentY &&
+        y <= commentY + iconSize
+      ) {
+        return stroke;
+      }
+    }
+  }
+  return null;
+}
+
+/**
  * Check if a click hits ANY object - returns the first hit
- * Checks in order: text, image, shape, stamp, signature, pen stroke
+ * Checks in order: text, image, shape, stamp, signature, pen stroke, checkbox, datestamp, textfield, comment
  */
 function checkAnyObjectClick(pageIndex, x, y, canvasWidth, canvasHeight) {
   return (
@@ -231,7 +345,11 @@ function checkAnyObjectClick(pageIndex, x, y, canvasWidth, canvasHeight) {
     checkShapeClick(pageIndex, x, y, canvasWidth, canvasHeight) ||
     checkStampClick(pageIndex, x, y, canvasWidth, canvasHeight) ||
     checkSignatureClick(pageIndex, x, y, canvasWidth, canvasHeight) ||
-    checkPenStrokeClick(pageIndex, x, y, canvasWidth, canvasHeight)
+    checkPenStrokeClick(pageIndex, x, y, canvasWidth, canvasHeight) ||
+    checkCheckboxClick(pageIndex, x, y, canvasWidth, canvasHeight) ||
+    checkDateStampClick(pageIndex, x, y, canvasWidth, canvasHeight) ||
+    checkTextFieldClick(pageIndex, x, y, canvasWidth, canvasHeight) ||
+    checkCommentClick(pageIndex, x, y, canvasWidth, canvasHeight)
   );
 }
 
@@ -272,4 +390,38 @@ function checkAllObjectsAtPoint(pageIndex, x, y, canvasWidth, canvasHeight) {
   if (penStroke) hits.push(penStroke);
 
   return hits;
+}
+function checkWatermarkClick(pageIndex, x, y, canvasWidth, canvasHeight) {
+  const strokes = strokeHistory[pageIndex];
+  if (!strokes) return null;
+
+  for (let i = strokes.length - 1; i >= 0; i--) {
+    const stroke = strokes[i];
+    if (stroke.type === "watermark") {
+      const watermarkX = stroke.x * canvasWidth;
+      const watermarkY = stroke.y * canvasHeight;
+      const fontSize = stroke.fontSize * canvasHeight;
+
+      // Create temporary canvas to measure text
+      const tempCanvas = document.createElement("canvas");
+      const tempCtx = tempCanvas.getContext("2d");
+      tempCtx.font = `bold ${fontSize}px Arial`;
+      const textWidth = tempCtx.measureText(stroke.text).width;
+
+      // Approximate bounding box (accounting for rotation)
+      const halfWidth = textWidth / 2;
+      const halfHeight = fontSize / 2;
+
+      // Simple hit test (not accounting for rotation, but good enough)
+      if (
+        x >= watermarkX - halfWidth &&
+        x <= watermarkX + halfWidth &&
+        y >= watermarkY - halfHeight &&
+        y <= watermarkY + halfHeight
+      ) {
+        return stroke;
+      }
+    }
+  }
+  return null;
 }

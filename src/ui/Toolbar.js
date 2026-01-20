@@ -528,4 +528,138 @@ function initToolbar() {
     setRedactionType("whiteout");
     document.getElementById("redactionPopup").classList.add("hidden");
   });
+
+  // Checkbox tool click handler
+  document.getElementById("checkboxTool").addEventListener("click", (e) => {
+    currentTool = "checkbox";
+    document.getElementById("checkboxTool").classList.add("active");
+    document.getElementById("selectTool").classList.remove("active");
+    document.getElementById("moveTool").classList.remove("active");
+    document.getElementById("penTool").classList.remove("active");
+    document.getElementById("textTool").classList.remove("active");
+    document.getElementById("deleteTool").classList.remove("active");
+    document.getElementById("eraserTool").classList.remove("active");
+    document.getElementById("highlightTool").classList.remove("active");
+    document.getElementById("imageTool").classList.remove("active");
+    document.getElementById("shapeTool").classList.remove("active");
+    document.getElementById("signatureTool").classList.remove("active");
+    document.getElementById("stampTool").classList.remove("active");
+    document.getElementById("redactionTool").classList.remove("active");
+
+    document.getElementById("shapeSelector").classList.add("hidden");
+    document.getElementById("stampSelector").classList.add("hidden");
+
+    pages.forEach((p, i) =>
+      redrawStrokes(p.ctx, i, p.inkC.width, p.inkC.height)
+    );
+  });
+
+  // Date stamp tool click handler
+  document.getElementById("dateStampTool").addEventListener("click", () => {
+    currentTool = "datestamp";
+    document.getElementById("dateStampTool").classList.add("active");
+    document.getElementById("selectTool").classList.remove("active");
+    document.getElementById("moveTool").classList.remove("active");
+    document.getElementById("penTool").classList.remove("active");
+    document.getElementById("textTool").classList.remove("active");
+    document.getElementById("deleteTool").classList.remove("active");
+    document.getElementById("eraserTool").classList.remove("active");
+    document.getElementById("highlightTool").classList.remove("active");
+    document.getElementById("imageTool").classList.remove("active");
+    document.getElementById("shapeTool").classList.remove("active");
+    document.getElementById("signatureTool").classList.remove("active");
+    document.getElementById("stampTool").classList.remove("active");
+    document.getElementById("redactionTool").classList.remove("active");
+    document.getElementById("checkboxTool").classList.remove("active");
+    document.getElementById("textFieldTool").classList.remove("active");
+
+    document.getElementById("shapeSelector").classList.add("hidden");
+    document.getElementById("stampSelector").classList.add("hidden");
+
+    pages.forEach((p, i) =>
+      redrawStrokes(p.ctx, i, p.inkC.width, p.inkC.height)
+    );
+  });
+
+  document.getElementById("textFieldTool").addEventListener("click", () => {
+    currentTool = "textfield";
+    document.getElementById("textFieldTool").classList.add("active");
+    document.getElementById("selectTool").classList.remove("active");
+    document.getElementById("moveTool").classList.remove("active");
+    document.getElementById("penTool").classList.remove("active");
+    document.getElementById("textTool").classList.remove("active");
+    document.getElementById("deleteTool").classList.remove("active");
+    document.getElementById("eraserTool").classList.remove("active");
+    document.getElementById("highlightTool").classList.remove("active");
+    document.getElementById("imageTool").classList.remove("active");
+    document.getElementById("shapeTool").classList.remove("active");
+    document.getElementById("signatureTool").classList.remove("active");
+    document.getElementById("stampTool").classList.remove("active");
+    document.getElementById("redactionTool").classList.remove("active");
+    document.getElementById("checkboxTool").classList.remove("active");
+    document.getElementById("dateStampTool").classList.remove("active");
+
+    document.getElementById("shapeSelector").classList.add("hidden");
+    document.getElementById("stampSelector").classList.add("hidden");
+
+    pages.forEach((p, i) =>
+      redrawStrokes(p.ctx, i, p.inkC.width, p.inkC.height)
+    );
+  });
+
+  document.getElementById("commentTool").addEventListener("click", () => {
+    currentTool = "comment";
+    document.getElementById("commentTool").classList.add("active");
+    document.getElementById("selectTool").classList.remove("active");
+    document.getElementById("moveTool").classList.remove("active");
+    document.getElementById("penTool").classList.remove("active");
+    document.getElementById("textTool").classList.remove("active");
+    document.getElementById("deleteTool").classList.remove("active");
+    document.getElementById("eraserTool").classList.remove("active");
+    document.getElementById("highlightTool").classList.remove("active");
+    document.getElementById("imageTool").classList.remove("active");
+    document.getElementById("shapeTool").classList.remove("active");
+    document.getElementById("signatureTool").classList.remove("active");
+    document.getElementById("stampTool").classList.remove("active");
+    document.getElementById("redactionTool").classList.remove("active");
+    document.getElementById("checkboxTool").classList.remove("active");
+    document.getElementById("dateStampTool").classList.remove("active");
+    document.getElementById("textFieldTool").classList.remove("active");
+    document.getElementById("watermarkTool").classList.remove("active");
+
+    document.getElementById("shapeSelector").classList.add("hidden");
+    document.getElementById("stampSelector").classList.add("hidden");
+
+    pages.forEach((p, i) =>
+      redrawStrokes(p.ctx, i, p.inkC.width, p.inkC.height)
+    );
+  });
+
+  document.getElementById("watermarkTool").addEventListener("click", () => {
+    currentTool = "watermark";
+    document.getElementById("watermarkTool").classList.add("active");
+    document.getElementById("selectTool").classList.remove("active");
+    document.getElementById("moveTool").classList.remove("active");
+    document.getElementById("penTool").classList.remove("active");
+    document.getElementById("textTool").classList.remove("active");
+    document.getElementById("deleteTool").classList.remove("active");
+    document.getElementById("eraserTool").classList.remove("active");
+    document.getElementById("highlightTool").classList.remove("active");
+    document.getElementById("imageTool").classList.remove("active");
+    document.getElementById("shapeTool").classList.remove("active");
+    document.getElementById("signatureTool").classList.remove("active");
+    document.getElementById("stampTool").classList.remove("active");
+    document.getElementById("redactionTool").classList.remove("active");
+    document.getElementById("checkboxTool").classList.remove("active");
+    document.getElementById("dateStampTool").classList.remove("active");
+    document.getElementById("textFieldTool").classList.remove("active");
+    document.getElementById("commentTool").classList.remove("active");
+
+    document.getElementById("shapeSelector").classList.add("hidden");
+    document.getElementById("stampSelector").classList.add("hidden");
+
+    pages.forEach((p, i) =>
+      redrawStrokes(p.ctx, i, p.inkC.width, p.inkC.height)
+    );
+  });
 }
