@@ -117,6 +117,16 @@ function attachCanvasListeners(canvas, pageIndex) {
       return;
     }
 
+    if (currentTool === "measurement") {
+      if (measurementMode === "distance") {
+        const measurementState = handleDistanceMeasureStart(e, canvas, pageIndex);
+        toolState = { ...toolState, ...measurementState };
+      } else if (measurementMode === "area") {
+        handleAreaMeasureClick(e, canvas, pageIndex);
+      }
+      return;
+    }
+
     if (currentTool === "redaction") {
       const redactionState = handleRedactionStart(e, canvas, pageIndex);
       toolState = { ...toolState, ...redactionState };
@@ -206,6 +216,11 @@ function attachCanvasListeners(canvas, pageIndex) {
       return;
     }
 
+    if (currentTool === "measurement" && measurementMode === "distance" && toolState.measuringDistance) {
+      toolState = handleDistanceMeasureMove(e, canvas, toolState);
+      return;
+    }
+
     if (currentTool === "pen" && toolState.drawing) {
       toolState = handlePenMove(e, canvas, toolState);
     }
@@ -252,10 +267,22 @@ function attachCanvasListeners(canvas, pageIndex) {
       return;
     }
 
+    if (currentTool === "measurement" && measurementMode === "distance" && toolState.measuringDistance) {
+      toolState = handleDistanceMeasureStop(canvas, pageIndex, toolState);
+      return;
+    }
+
     if (toolState.drawing) {
       toolState = handlePenStop(canvas, pageIndex, toolState);
     }
   }
+
+  // Area measurement completion on Enter or Escape
+  canvas.addEventListener("dblclick", (e) => {
+    if (currentTool === "measurement" && measurementMode === "area" && measurementPoints.length >= 3) {
+      handleAreaMeasureComplete(canvas, pageIndex);
+    }
+  });
 
   canvas.addEventListener("mousedown", start);
   canvas.addEventListener("mousemove", move);

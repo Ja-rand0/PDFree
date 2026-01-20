@@ -29,6 +29,7 @@ body {
 /* PDF Canvas Area */
 #pdfArea {
     margin-left: 60px;
+    margin-right: 0;
     padding-top: 57px;
     width: calc(100% - 60px);
     min-height: calc(100vh - 57px);
@@ -67,4 +68,90 @@ body {
 
 .inkCanvasTouch.image-cursor {
     cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"><text y="24" font-size="24">🖼️</text></svg>') 16 16, auto;
+}
+
+/* Page Sidebar */
+#pageSidebar {
+    position: fixed;
+    right: 0;
+    top: 57px;
+    width: 220px;
+    height: calc(100vh - 57px);
+    background: #ffffff;
+    border-left: 1px solid #e5e7eb;
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+}
+
+#pageSidebar.hidden {
+    display: none;
+}
+
+.page-sidebar-header {
+    padding: 16px;
+    font-weight: 600;
+    font-size: 14px;
+    color: #374151;
+    border-bottom: 1px solid #e5e7eb;
+    background: #f9fafb;
+}
+
+.page-thumbnails-container {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 12px;
+}
+
+.page-thumbnail {
+    margin-bottom: 12px;
+    cursor: move;
+    border: 2px solid transparent;
+    border-radius: 4px;
+    background: #f3f4f6;
+    position: relative;
+    transition: all 0.2s;
+}
+
+.page-thumbnail:hover {
+    border-color: #9ca3af;
+}
+
+.page-thumbnail.selected {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 1px #3b82f6;
+}
+
+.page-thumbnail.dragging {
+    opacity: 0.5;
+    transform: scale(0.95);
+}
+
+.page-thumbnail.drag-over-top {
+    border-top-color: #3b82f6;
+    border-top-width: 3px;
+}
+
+.page-thumbnail.drag-over-bottom {
+    border-bottom-color: #3b82f6;
+    border-bottom-width: 3px;
+}
+
+.page-thumbnail-canvas {
+    width: 100%;
+    display: block;
+    border-radius: 2px;
+}
+
+.page-thumbnail-label {
+    position: absolute;
+    bottom: 4px;
+    left: 4px;
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 500;
 }

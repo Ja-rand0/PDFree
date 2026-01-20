@@ -349,7 +349,9 @@ function checkAnyObjectClick(pageIndex, x, y, canvasWidth, canvasHeight) {
     checkCheckboxClick(pageIndex, x, y, canvasWidth, canvasHeight) ||
     checkDateStampClick(pageIndex, x, y, canvasWidth, canvasHeight) ||
     checkTextFieldClick(pageIndex, x, y, canvasWidth, canvasHeight) ||
-    checkCommentClick(pageIndex, x, y, canvasWidth, canvasHeight)
+    checkCommentClick(pageIndex, x, y, canvasWidth, canvasHeight) ||
+    checkWatermarkClick(pageIndex, x, y, canvasWidth, canvasHeight) ||
+    checkMeasurementClick(pageIndex, x, y, canvasWidth, canvasHeight)
   );
 }
 
@@ -389,6 +391,24 @@ function checkAllObjectsAtPoint(pageIndex, x, y, canvasWidth, canvasHeight) {
   );
   if (penStroke) hits.push(penStroke);
 
+  const checkbox = checkCheckboxClick(pageIndex, x, y, canvasWidth, canvasHeight);
+  if (checkbox) hits.push(checkbox);
+
+  const datestamp = checkDateStampClick(pageIndex, x, y, canvasWidth, canvasHeight);
+  if (datestamp) hits.push(datestamp);
+
+  const textfield = checkTextFieldClick(pageIndex, x, y, canvasWidth, canvasHeight);
+  if (textfield) hits.push(textfield);
+
+  const comment = checkCommentClick(pageIndex, x, y, canvasWidth, canvasHeight);
+  if (comment) hits.push(comment);
+
+  const watermark = checkWatermarkClick(pageIndex, x, y, canvasWidth, canvasHeight);
+  if (watermark) hits.push(watermark);
+
+  const measurement = checkMeasurementClick(pageIndex, x, y, canvasWidth, canvasHeight);
+  if (measurement) hits.push(measurement);
+
   return hits;
 }
 function checkWatermarkClick(pageIndex, x, y, canvasWidth, canvasHeight) {
@@ -424,4 +444,86 @@ function checkWatermarkClick(pageIndex, x, y, canvasWidth, canvasHeight) {
     }
   }
   return null;
+}
+
+/**
+ * Check if a click hits a measurement object
+ */
+function checkMeasurementClick(pageIndex, x, y, canvasWidth, canvasHeight) {
+  const strokes = strokeHistory[pageIndex];
+  if (!strokes) return null;
+
+  for (let i = strokes.length - 1; i >= 0; i--) {
+    const stroke = strokes[i];
+    if (stroke.type === "measurement") {
+      if (stroke.measureType === "distance") {
+        const x1 = stroke.startX * canvasWidth;
+        const y1 = stroke.startY * canvasHeight;
+        const x2 = stroke.endX * canvasWidth;
+        const y2 = stroke.endY * canvasHeight;
+
+        // Check if click is near the line
+        const hitMargin = 10;
+        const distance = pointToLineDistance(x, y, x1, y1, x2, y2);
+        if (distance <= hitMargin) {
+          return stroke;
+        }
+      } else if (stroke.measureType === "area") {
+        // Check if point is inside polygon
+        if (pointInPolygon(x, y, stroke.points, canvasWidth, canvasHeight)) {
+          return stroke;
+        }
+      }
+    }
+  }
+  return null;
+}
+
+/**
+ * Calculate distance from point to line segment
+ */
+function pointToLineDistance(px, py, x1, y1, x2, y2) {
+  const A = px - x1;
+  const B = py - y1;
+  const C = x2 - x1;
+  const D = y2 - y1;
+
+  const dot = A * C + B * D;
+  const lenSq = C * C + D * D;
+  let param = -1;
+  if (lenSq !== 0) param = dot / lenSq;
+
+  let xx, yy;
+
+  if (param < 0) {
+    xx = x1;
+    yy = y1;
+  } else if (param > 1) {
+    xx = x2;
+    yy = y2;
+  } else {
+    xx = x1 + param * C;
+    yy = y1 + param * D;
+  }
+
+  const dx = px - xx;
+  const dy = py - yy;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+/**
+ * Check if point is inside polygon
+ */
+function pointInPolygon(x, y, points, canvasWidth, canvasHeight) {
+  let inside = false;
+  for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
+    const xi = points[i].x * canvasWidth;
+    const yi = points[i].y * canvasHeight;
+    const xj = points[j].x * canvasWidth;
+    const yj = points[j].y * canvasHeight;
+
+    const intersect = ((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+    if (intersect) inside = !inside;
+  }
+  return inside;
 }

@@ -74,6 +74,7 @@ async function renderPages() {
 
       const ctx = inkC.getContext("2d");
       pages.push({
+        pdfC: pdfCanvas,
         inkC,
         ctx,
         baseWidth: viewport.width,
@@ -718,6 +719,8 @@ function redrawStrokes(ctx, pageIndex, canvasWidth, canvasHeight) {
       ctx.rotate((stroke.rotation * Math.PI) / 180);
       ctx.fillText(stroke.text, 0, 0);
       ctx.restore();
+    } else if (stroke.type === "measurement") {
+      renderMeasurement(ctx, stroke, canvasWidth, canvasHeight);
     } else if (stroke.type === "image") {
       // Draw image synchronously using pre-loaded object
       if (stroke.imgObject) {

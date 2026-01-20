@@ -32,6 +32,7 @@ function initToolbar() {
     document.getElementById("shapeSelector").classList.add("hidden");
     document.getElementById("signatureSelector").classList.add("hidden");
     document.getElementById("stampSelector").classList.add("hidden");
+    document.getElementById("measurementUnitSelector").classList.add("hidden");
     pages.forEach((p, i) =>
       redrawStrokes(p.ctx, i, p.inkC.width, p.inkC.height)
     );
@@ -52,6 +53,7 @@ function initToolbar() {
     document.getElementById("shapeSelector").classList.add("hidden");
     document.getElementById("signatureSelector").classList.add("hidden");
     document.getElementById("stampSelector").classList.add("hidden");
+    document.getElementById("measurementUnitSelector").classList.add("hidden");
     pages.forEach((p, i) =>
       redrawStrokes(p.ctx, i, p.inkC.width, p.inkC.height)
     );
@@ -69,6 +71,7 @@ function initToolbar() {
     document.getElementById("shapeSelector").classList.add("hidden");
     document.getElementById("signatureSelector").classList.add("hidden");
     document.getElementById("stampSelector").classList.add("hidden");
+    document.getElementById("measurementUnitSelector").classList.add("hidden");
     pages.forEach((p, i) =>
       redrawStrokes(p.ctx, i, p.inkC.width, p.inkC.height)
     );
@@ -88,6 +91,7 @@ function initToolbar() {
     document.getElementById("shapeSelector").classList.add("hidden");
     document.getElementById("signatureSelector").classList.add("hidden");
     document.getElementById("stampSelector").classList.add("hidden");
+    document.getElementById("measurementUnitSelector").classList.add("hidden");
     pages.forEach((p, i) =>
       redrawStrokes(p.ctx, i, p.inkC.width, p.inkC.height)
     );
@@ -107,6 +111,7 @@ function initToolbar() {
     document.getElementById("shapeSelector").classList.add("hidden");
     document.getElementById("signatureSelector").classList.add("hidden");
     document.getElementById("stampSelector").classList.add("hidden");
+    document.getElementById("measurementUnitSelector").classList.add("hidden");
     pages.forEach((p, i) =>
       redrawStrokes(p.ctx, i, p.inkC.width, p.inkC.height)
     );
@@ -128,6 +133,7 @@ function initToolbar() {
     document.getElementById("shapeSelector").classList.add("hidden");
     document.getElementById("signatureSelector").classList.add("hidden");
     document.getElementById("stampSelector").classList.add("hidden");
+    document.getElementById("measurementUnitSelector").classList.add("hidden");
     pages.forEach((p, i) =>
       redrawStrokes(p.ctx, i, p.inkC.width, p.inkC.height)
     );
@@ -150,6 +156,7 @@ function initToolbar() {
     document.getElementById("shapeSelector").classList.add("hidden");
     document.getElementById("signatureSelector").classList.add("hidden");
     document.getElementById("stampSelector").classList.add("hidden");
+    document.getElementById("measurementUnitSelector").classList.add("hidden");
     pages.forEach((p, i) =>
       redrawStrokes(p.ctx, i, p.inkC.width, p.inkC.height)
     );
@@ -177,6 +184,7 @@ function initToolbar() {
     document.getElementById("shapeSelector").classList.add("hidden");
     document.getElementById("signatureSelector").classList.add("hidden");
     document.getElementById("stampSelector").classList.add("hidden");
+    document.getElementById("measurementUnitSelector").classList.add("hidden");
     pages.forEach((p, i) =>
       redrawStrokes(p.ctx, i, p.inkC.width, p.inkC.height)
     );
@@ -213,6 +221,7 @@ function initToolbar() {
     document.getElementById("shapeSelector").classList.add("hidden");
     document.getElementById("signatureSelector").classList.add("hidden");
     document.getElementById("stampSelector").classList.add("hidden");
+    document.getElementById("measurementUnitSelector").classList.add("hidden");
     pages.forEach((p, i) => {
       if (undoStacks[i].length === 0) return;
 
@@ -233,6 +242,7 @@ function initToolbar() {
     document.getElementById("shapeSelector").classList.add("hidden");
     document.getElementById("signatureSelector").classList.add("hidden");
     document.getElementById("stampSelector").classList.add("hidden");
+    document.getElementById("measurementUnitSelector").classList.add("hidden");
     pages.forEach((p, i) => {
       if (redoStacks[i].length === 0) return;
 
@@ -248,6 +258,7 @@ function initToolbar() {
     document.getElementById("shapeSelector").classList.add("hidden");
     document.getElementById("signatureSelector").classList.add("hidden");
     document.getElementById("stampSelector").classList.add("hidden");
+    document.getElementById("measurementUnitSelector").classList.add("hidden");
     pages.forEach((p, i) => {
       const currentStrokes = [...strokeHistory[i]];
       if (currentStrokes.length > 0) {
@@ -661,5 +672,182 @@ function initToolbar() {
     pages.forEach((p, i) =>
       redrawStrokes(p.ctx, i, p.inkC.width, p.inkC.height)
     );
+  });
+
+  // Measurement tool - show popup on hover
+  document.getElementById("measurementTool").addEventListener("mouseenter", (e) => {
+    const measurementPopup = document.getElementById("measurementPopup");
+    const measurementTool = document.getElementById("measurementTool");
+    const rect = measurementTool.getBoundingClientRect();
+    measurementPopup.style.top = `${rect.top}px`;
+    measurementPopup.classList.remove("hidden");
+  });
+
+  document.getElementById("measurementTool").addEventListener("mouseleave", (e) => {
+    setTimeout(() => {
+      const measurementPopup = document.getElementById("measurementPopup");
+      if (
+        !measurementPopup.matches(":hover") &&
+        !document.getElementById("measurementTool").matches(":hover")
+      ) {
+        measurementPopup.classList.add("hidden");
+      }
+    }, 100);
+  });
+
+  document.getElementById("measurementPopup").addEventListener("mouseenter", () => {
+    document.getElementById("measurementPopup").classList.remove("hidden");
+  });
+
+  document.getElementById("measurementPopup").addEventListener("mouseleave", () => {
+    document.getElementById("measurementPopup").classList.add("hidden");
+  });
+
+  // Measurement tool click handler - set to distance mode by default
+  document.getElementById("measurementTool").addEventListener("click", () => {
+    currentTool = "measurement";
+    setMeasurementMode("distance");
+    document.getElementById("measurementTool").classList.add("active");
+    document.getElementById("selectTool").classList.remove("active");
+    document.getElementById("moveTool").classList.remove("active");
+    document.getElementById("penTool").classList.remove("active");
+    document.getElementById("textTool").classList.remove("active");
+    document.getElementById("deleteTool").classList.remove("active");
+    document.getElementById("eraserTool").classList.remove("active");
+    document.getElementById("highlightTool").classList.remove("active");
+    document.getElementById("imageTool").classList.remove("active");
+    document.getElementById("shapeTool").classList.remove("active");
+    document.getElementById("signatureTool").classList.remove("active");
+    document.getElementById("stampTool").classList.remove("active");
+    document.getElementById("redactionTool").classList.remove("active");
+    document.getElementById("checkboxTool").classList.remove("active");
+    document.getElementById("dateStampTool").classList.remove("active");
+    document.getElementById("textFieldTool").classList.remove("active");
+    document.getElementById("commentTool").classList.remove("active");
+    document.getElementById("watermarkTool").classList.remove("active");
+
+    document.getElementById("shapeSelector").classList.add("hidden");
+    document.getElementById("stampSelector").classList.add("hidden");
+    document.getElementById("measurementUnitSelector").classList.remove("hidden");
+
+    pages.forEach((p, i) =>
+      redrawStrokes(p.ctx, i, p.inkC.width, p.inkC.height)
+    );
+  });
+
+  // Measurement type selectors
+  document.getElementById("measurementDistance").addEventListener("click", () => {
+    currentTool = "measurement";
+    setMeasurementMode("distance");
+    document.getElementById("measurementPopup").classList.add("hidden");
+    document.getElementById("measurementTool").classList.add("active");
+    document.getElementById("selectTool").classList.remove("active");
+    document.getElementById("moveTool").classList.remove("active");
+    document.getElementById("penTool").classList.remove("active");
+    document.getElementById("textTool").classList.remove("active");
+    document.getElementById("deleteTool").classList.remove("active");
+    document.getElementById("eraserTool").classList.remove("active");
+    document.getElementById("highlightTool").classList.remove("active");
+    document.getElementById("imageTool").classList.remove("active");
+    document.getElementById("shapeTool").classList.remove("active");
+    document.getElementById("signatureTool").classList.remove("active");
+    document.getElementById("stampTool").classList.remove("active");
+    document.getElementById("redactionTool").classList.remove("active");
+    document.getElementById("checkboxTool").classList.remove("active");
+    document.getElementById("dateStampTool").classList.remove("active");
+    document.getElementById("textFieldTool").classList.remove("active");
+    document.getElementById("commentTool").classList.remove("active");
+    document.getElementById("watermarkTool").classList.remove("active");
+
+    document.getElementById("shapeSelector").classList.add("hidden");
+    document.getElementById("stampSelector").classList.add("hidden");
+    document.getElementById("measurementUnitSelector").classList.remove("hidden");
+
+    pages.forEach((p, i) =>
+      redrawStrokes(p.ctx, i, p.inkC.width, p.inkC.height)
+    );
+  });
+
+  document.getElementById("measurementArea").addEventListener("click", () => {
+    currentTool = "measurement";
+    setMeasurementMode("area");
+    document.getElementById("measurementPopup").classList.add("hidden");
+    document.getElementById("measurementTool").classList.add("active");
+    document.getElementById("selectTool").classList.remove("active");
+    document.getElementById("moveTool").classList.remove("active");
+    document.getElementById("penTool").classList.remove("active");
+    document.getElementById("textTool").classList.remove("active");
+    document.getElementById("deleteTool").classList.remove("active");
+    document.getElementById("eraserTool").classList.remove("active");
+    document.getElementById("highlightTool").classList.remove("active");
+    document.getElementById("imageTool").classList.remove("active");
+    document.getElementById("shapeTool").classList.remove("active");
+    document.getElementById("signatureTool").classList.remove("active");
+    document.getElementById("stampTool").classList.remove("active");
+    document.getElementById("redactionTool").classList.remove("active");
+    document.getElementById("checkboxTool").classList.remove("active");
+    document.getElementById("dateStampTool").classList.remove("active");
+    document.getElementById("textFieldTool").classList.remove("active");
+    document.getElementById("commentTool").classList.remove("active");
+    document.getElementById("watermarkTool").classList.remove("active");
+
+    document.getElementById("shapeSelector").classList.add("hidden");
+    document.getElementById("stampSelector").classList.add("hidden");
+    document.getElementById("measurementUnitSelector").classList.remove("hidden");
+
+    pages.forEach((p, i) =>
+      redrawStrokes(p.ctx, i, p.inkC.width, p.inkC.height)
+    );
+  });
+
+  // Measurement unit selectors
+  document.getElementById("unitPx").addEventListener("click", () => {
+    setMeasurementUnit("px");
+    document.getElementById("unitPx").classList.add("active");
+    document.getElementById("unitIn").classList.remove("active");
+    document.getElementById("unitFt").classList.remove("active");
+    document.getElementById("unitCm").classList.remove("active");
+    document.getElementById("unitMm").classList.remove("active");
+  });
+
+  document.getElementById("unitIn").addEventListener("click", () => {
+    setMeasurementUnit("in");
+    document.getElementById("unitPx").classList.remove("active");
+    document.getElementById("unitIn").classList.add("active");
+    document.getElementById("unitFt").classList.remove("active");
+    document.getElementById("unitCm").classList.remove("active");
+    document.getElementById("unitMm").classList.remove("active");
+  });
+
+  document.getElementById("unitFt").addEventListener("click", () => {
+    setMeasurementUnit("ft");
+    document.getElementById("unitPx").classList.remove("active");
+    document.getElementById("unitIn").classList.remove("active");
+    document.getElementById("unitFt").classList.add("active");
+    document.getElementById("unitCm").classList.remove("active");
+    document.getElementById("unitMm").classList.remove("active");
+  });
+
+  document.getElementById("unitCm").addEventListener("click", () => {
+    setMeasurementUnit("cm");
+    document.getElementById("unitPx").classList.remove("active");
+    document.getElementById("unitIn").classList.remove("active");
+    document.getElementById("unitFt").classList.remove("active");
+    document.getElementById("unitCm").classList.add("active");
+    document.getElementById("unitMm").classList.remove("active");
+  });
+
+  document.getElementById("unitMm").addEventListener("click", () => {
+    setMeasurementUnit("mm");
+    document.getElementById("unitPx").classList.remove("active");
+    document.getElementById("unitIn").classList.remove("active");
+    document.getElementById("unitFt").classList.remove("active");
+    document.getElementById("unitCm").classList.remove("active");
+    document.getElementById("unitMm").classList.add("active");
+  });
+
+  // Page sidebar toggle
+  document.getElementById("togglePageSidebar").addEventListener("click", () => {
+    togglePageSidebar();
   });
 }

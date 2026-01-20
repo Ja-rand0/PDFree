@@ -26,4 +26,6 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   // Render the PDF
   await renderPages();
+
+  // Page sidebar starts hidden - thumbnails generated on first toggle
 });

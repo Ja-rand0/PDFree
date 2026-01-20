@@ -180,6 +180,31 @@ function eraseAtPoint(pageIndex, x, y, radius, canvasWidth, canvasHeight) {
       continue;
     }
 
+    // Handle measurements - erase entirely when touched
+    if (stroke.type === "measurement") {
+      let shouldDelete = false;
+
+      if (stroke.measureType === "distance") {
+        const x1 = stroke.startX * canvasWidth;
+        const y1 = stroke.startY * canvasHeight;
+        const x2 = stroke.endX * canvasWidth;
+        const y2 = stroke.endY * canvasHeight;
+        const distance = pointToLineDistance(x, y, x1, y1, x2, y2);
+        if (distance <= radius) shouldDelete = true;
+      } else if (stroke.measureType === "area") {
+        if (pointInPolygon(x, y, stroke.points, canvasWidth, canvasHeight)) {
+          shouldDelete = true;
+        }
+      }
+
+      if (shouldDelete) {
+        const deletedStroke = strokeHistory[pageIndex].splice(i, 1)[0];
+        undoStacks[pageIndex].push({ type: "erase", stroke: deletedStroke });
+        redoStacks[pageIndex].length = 0;
+      }
+      continue;
+    }
+
     // Handle stamps - erase entirely when touched
     if (stroke.type === "stamp") {
       const stampX = stroke.x * canvasWidth;

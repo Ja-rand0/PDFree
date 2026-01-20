@@ -35,6 +35,7 @@
       <button id="textFieldTool" class="tool-btn" title="Text Field">📝</button>
       <button id="commentTool" class="tool-btn" title="Comment">💬</button>
       <button id="watermarkTool" class="tool-btn" title="Watermark">🏷️</button>
+      <button id="measurementTool" class="tool-btn" title="Measurement">📏</button>
     </div>
 
     <!-- Divider -->
@@ -102,6 +103,19 @@
     </div>
   </div>
 
+  <!-- Measurement popup selector (outside sidebar) -->
+  <div id="measurementPopup" class="hidden">
+    <div class="popup-title">Measurement Type</div>
+    <div class="popup-list">
+      <button id="measurementDistance" class="popup-btn popup-btn-gray">
+        <span>📏</span> Distance
+      </button>
+      <button id="measurementArea" class="popup-btn popup-btn-gray">
+        <span>⬟</span> Area
+      </button>
+    </div>
+  </div>
+
   <!-- Toolbar -->
   <div id="toolBar" class="hidden">
     <button id="homeBtn" class="btn btn-gray">← Home</button>
@@ -131,18 +145,35 @@
       <button id="stampUrgent" class="btn btn-orange">URGENT</button>
     </div>
 
+    <!-- Measurement unit selector -->
+    <div id="measurementUnitSelector" class="hidden toolbar-selector">
+      <span class="text-label">Unit:</span>
+      <button id="unitPx" class="btn btn-gray active">px</button>
+      <button id="unitIn" class="btn btn-gray">in</button>
+      <button id="unitFt" class="btn btn-gray">ft</button>
+      <button id="unitCm" class="btn btn-gray">cm</button>
+      <button id="unitMm" class="btn btn-gray">mm</button>
+    </div>
+
     <span class="text-label">Pen:</span>
     <input type="color" id="colorIn" value="#ff0000" />
     <input type="range" id="widthIn" min="1" max="8" value="2" />
     <button id="undoBtn" class="btn btn-gray">Undo</button>
     <button id="redoBtn" class="btn btn-gray">Redo</button>
     <button id="clearBtn" class="btn btn-gray">Clear all</button>
+    <button id="togglePageSidebar" class="btn btn-gray">📄 Pages</button>
     <button id="savePdfBtn" class="btn btn-green">Save PDF</button>
   </div>
 
   <!-- PDF Area -->
   <div id="pdfArea" class="hidden">
     <div id="canvasWrap"></div>
+  </div>
+
+  <!-- Page Thumbnail Sidebar (Right) -->
+  <div id="pageSidebar" class="hidden">
+    <div class="page-sidebar-header">Pages</div>
+    <div id="pageThumbnails" class="page-thumbnails-container"></div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
@@ -153,6 +184,7 @@
   <script src="src/core/SavePDF.js"></script>
   <script src="src/core/EventHandler.js"></script>
   <script src="src/ui/Toolbar.js"></script>
+  <script src="src/ui/PageManager.js"></script>
   <script src="src/ui/App.js"></script>
   <script src="src/tools/PenTool.js"></script>
   <script src="src/tools/TextTool.js"></script>
@@ -171,6 +203,7 @@
   <script src="src/tools/TextFieldTool.js"></script>
   <script src="src/tools/CommentTool.js"></script>
   <script src="src/tools/WatermarkTool.js"></script>
+  <script src="src/tools/MeasurementTool.js"></script>
   <script src="src/tools/ZoomTool.js"></script>
 </body>
 

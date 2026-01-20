@@ -1,7 +1,8 @@
 /* Popup containers */
 #shapePopup,
 #stampPopup,
-#redactionPopup {
+#redactionPopup,
+#measurementPopup {
     position: fixed;
     display: flex !important;
     flex-direction: column;
@@ -18,14 +19,16 @@
 
 #shapePopup.hidden,
 #stampPopup.hidden,
-#redactionPopup.hidden {
+#redactionPopup.hidden,
+#measurementPopup.hidden {
     display: none !important;
 }
 
 /* Speech bubble arrows */
 #shapePopup::before,
 #stampPopup::before,
-#redactionPopup::before {
+#redactionPopup::before,
+#measurementPopup::before {
     content: '';
     position: absolute;
     left: -8px;
@@ -39,7 +42,8 @@
 
 #shapePopup::after,
 #stampPopup::after,
-#redactionPopup::after {
+#redactionPopup::after,
+#measurementPopup::after {
     content: '';
     position: absolute;
     left: -6px;
