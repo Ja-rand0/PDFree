@@ -322,4 +322,56 @@ function handleDeleteClick(e, canvas, pageIndex) {
     }
     return;
   }
+
+  // Check if clicking on redaction
+  const clickedRedaction = checkRedactionClick(
+    pageIndex,
+    p.x,
+    p.y,
+    canvas.width,
+    canvas.height
+  );
+
+  if (clickedRedaction) {
+    const idx = strokeHistory[pageIndex].indexOf(clickedRedaction);
+    if (idx > -1) {
+      const deletedStroke = strokeHistory[pageIndex].splice(idx, 1)[0];
+      undoStacks[pageIndex].push({ type: "delete", stroke: deletedStroke });
+      redoStacks[pageIndex].length = 0;
+
+      redrawStrokes(
+        canvas.getContext("2d"),
+        pageIndex,
+        canvas.width,
+        canvas.height
+      );
+    }
+    return;
+  }
+
+  // Check if clicking on measurement
+  const clickedMeasurement = checkMeasurementClick(
+    pageIndex,
+    p.x,
+    p.y,
+    canvas.width,
+    canvas.height
+  );
+
+  if (clickedMeasurement) {
+    const idx = strokeHistory[pageIndex].indexOf(clickedMeasurement);
+    if (idx > -1) {
+      const deletedStroke = strokeHistory[pageIndex].splice(idx, 1)[0];
+      undoStacks[pageIndex].push({ type: "delete", stroke: deletedStroke });
+      redoStacks[pageIndex].length = 0;
+
+      redrawStrokes(
+        canvas.getContext("2d"),
+        pageIndex,
+        canvas.width,
+        canvas.height
+      );
+    }
+    return;
+  }
 }

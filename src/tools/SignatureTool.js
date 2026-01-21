@@ -247,48 +247,55 @@ function handleSignatureClick(e, canvas, pageIndex) {
   const sigWidth = maxX - minX;
   const sigHeight = maxY - minY;
 
+  // Create an offscreen canvas to render the signature as an image
+  const padding = 10;
+  const offCanvas = document.createElement("canvas");
+  offCanvas.width = sigWidth + padding * 2;
+  offCanvas.height = sigHeight + padding * 2;
+  const offCtx = offCanvas.getContext("2d");
+
+  // Draw signature strokes onto offscreen canvas
+  offCtx.strokeStyle = "#000000";
+  offCtx.lineWidth = 2;
+  offCtx.lineCap = "round";
+  offCtx.lineJoin = "round";
+
+  signaturePoints.forEach((stroke) => {
+    if (stroke.length === 0) return;
+    offCtx.beginPath();
+    offCtx.moveTo(stroke[0].x - minX + padding, stroke[0].y - minY + padding);
+    for (let i = 1; i < stroke.length; i++) {
+      offCtx.lineTo(stroke[i].x - minX + padding, stroke[i].y - minY + padding);
+    }
+    offCtx.stroke();
+  });
+
+  // Convert to data URL
+  const dataUrl = offCanvas.toDataURL("image/png");
+
   // Get click position
   const p = getCanvasPosition(e, canvas);
 
   // Calculate target size (15% of canvas width, maintaining aspect ratio)
   const targetWidth = canvas.width * 0.15;
-  const scale = targetWidth / sigWidth;
-  const targetHeight = sigHeight * scale;
+  const scale = targetWidth / (sigWidth + padding * 2);
+  const targetHeight = (sigHeight + padding * 2) * scale;
 
-  // Calculate normalized click position (center signature on click)
-  const clickNormX = p.x / canvas.width;
-  const clickNormY = p.y / canvas.height;
+  // Create a single signature-image object (like regular images)
+  const signatureImage = {
+    type: "signature-image",
+    dataUrl: dataUrl,
+    x: (p.x - targetWidth / 2) / canvas.width,
+    y: (p.y - targetHeight / 2) / canvas.height,
+    width: targetWidth / canvas.width,
+    height: targetHeight / canvas.height,
+    originalWidth: sigWidth + padding * 2,
+    originalHeight: sigHeight + padding * 2,
+  };
 
-  // Place each stroke as a separate signature stroke
-  signaturePoints.forEach((stroke) => {
-    // Normalize and scale points relative to click position
-    const normalizedPoints = stroke.map((point) => {
-      // Translate to origin, scale, then translate to click position
-      const scaledX = (point.x - minX) * scale;
-      const scaledY = (point.y - minY) * scale;
-
-      // Center on click position
-      const finalX = p.x - targetWidth / 2 + scaledX;
-      const finalY = p.y - targetHeight / 2 + scaledY;
-
-      return {
-        x: finalX / canvas.width,
-        y: finalY / canvas.height,
-      };
-    });
-
-    // Create signature stroke (vector-based like pen strokes)
-    const signatureStroke = {
-      type: "signature",
-      color: "#000000",
-      width: 2,
-      points: normalizedPoints,
-    };
-
-    strokeHistory[pageIndex].push(signatureStroke);
-    undoStacks[pageIndex].push(signatureStroke);
-    redoStacks[pageIndex].length = 0;
-  });
+  strokeHistory[pageIndex].push(signatureImage);
+  undoStacks[pageIndex].push(signatureImage);
+  redoStacks[pageIndex].length = 0;
 
   // Redraw to show signature
   redrawStrokes(
@@ -298,7 +305,7 @@ function handleSignatureClick(e, canvas, pageIndex) {
     canvas.height
   );
 
-  console.log(`Placed signature with ${signaturePoints.length} strokes`);
+  console.log("Placed signature as single image object");
 }
 
 // When signature tool is deactivated, hide preview

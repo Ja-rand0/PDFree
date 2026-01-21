@@ -60,6 +60,14 @@ function handleHighlightStop(canvas, pageIndex, state) {
     strokeHistory[pageIndex].push(state.currentStroke);
     undoStacks[pageIndex].push(state.currentStroke);
     redoStacks[pageIndex].length = 0;
+
+    // Redraw to render the final highlight properly
+    redrawStrokes(
+      canvas.getContext("2d"),
+      pageIndex,
+      canvas.width,
+      canvas.height
+    );
   }
 
   return { highlighting: false, currentStroke: null };

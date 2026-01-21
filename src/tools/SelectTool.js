@@ -37,11 +37,19 @@ function getHandleAtPosition(x, y, obj, canvas) {
     const endX = obj.endX * canvas.width;
     const endY = obj.endY * canvas.height;
     if (obj.shapeType === "circle") {
-      const radius = Math.sqrt((endX - startX) ** 2 + (endY - startY) ** 2);
-      left = startX - radius - 5;
-      top = startY - radius - 5;
-      width = radius * 2 + 10;
-      height = radius * 2 + 10;
+      let radiusX, radiusY;
+      if (obj.radiusX !== undefined && obj.radiusY !== undefined) {
+        radiusX = obj.radiusX * canvas.width;
+        radiusY = obj.radiusY * canvas.height;
+      } else {
+        const radius = Math.sqrt((endX - startX) ** 2 + (endY - startY) ** 2);
+        radiusX = radius;
+        radiusY = radius;
+      }
+      left = startX - Math.abs(radiusX) - 5;
+      top = startY - Math.abs(radiusY) - 5;
+      width = Math.abs(radiusX) * 2 + 10;
+      height = Math.abs(radiusY) * 2 + 10;
     } else {
       left = Math.min(startX, endX) - 5;
       top = Math.min(startY, endY) - 5;
@@ -70,34 +78,57 @@ function getHandleAtPosition(x, y, obj, canvas) {
     return null;
   }
 
-  // Check all 8 handles
-  if (Math.abs(x - left) < hitArea && Math.abs(y - top) < hitArea) return "tl";
-  if (Math.abs(x - (left + width)) < hitArea && Math.abs(y - top) < hitArea)
+  // Check all 8 handles - corners first (higher priority)
+  // Scale hit area based on object size - smaller objects get smaller hit areas
+  const minDim = Math.min(width, height);
+  const cornerHit = Math.min(hitArea, minDim / 3);
+  const edgeHit = Math.min(hitArea, minDim / 3);
+
+  // Corner handles
+  if (Math.abs(x - left) < cornerHit && Math.abs(y - top) < cornerHit) return "tl";
+  if (Math.abs(x - (left + width)) < cornerHit && Math.abs(y - top) < cornerHit)
     return "tr";
-  if (Math.abs(x - left) < hitArea && Math.abs(y - (top + height)) < hitArea)
+  if (Math.abs(x - left) < cornerHit && Math.abs(y - (top + height)) < cornerHit)
     return "bl";
   if (
-    Math.abs(x - (left + width)) < hitArea &&
-    Math.abs(y - (top + height)) < hitArea
+    Math.abs(x - (left + width)) < cornerHit &&
+    Math.abs(y - (top + height)) < cornerHit
   )
     return "br";
-  if (Math.abs(x - (left + width / 2)) < hitArea && Math.abs(y - top) < hitArea)
-    return "t";
+
+  // Edge handles - check if within edge hit area AND along the edge
+  // For small objects, reduce the corner exclusion zone
+  const cornerExclude = Math.min(cornerHit, minDim / 4);
+
+  // Top edge: close to top, and between left and right corners
   if (
-    Math.abs(x - (left + width / 2)) < hitArea &&
-    Math.abs(y - (top + height)) < hitArea
+    Math.abs(y - top) < edgeHit &&
+    x > left + cornerExclude &&
+    x < left + width - cornerExclude
+  )
+    return "t";
+  // Bottom edge
+  if (
+    Math.abs(y - (top + height)) < edgeHit &&
+    x > left + cornerExclude &&
+    x < left + width - cornerExclude
   )
     return "b";
+  // Left edge
   if (
-    Math.abs(x - left) < hitArea &&
-    Math.abs(y - (top + height / 2)) < hitArea
+    Math.abs(x - left) < edgeHit &&
+    y > top + cornerExclude &&
+    y < top + height - cornerExclude
   )
     return "l";
+  // Right edge
   if (
-    Math.abs(x - (left + width)) < hitArea &&
-    Math.abs(y - (top + height / 2)) < hitArea
+    Math.abs(x - (left + width)) < edgeHit &&
+    y > top + cornerExclude &&
+    y < top + height - cornerExclude
   )
     return "r";
+
   return null;
 }
 
@@ -124,12 +155,20 @@ function getObjectBounds(obj, canvas) {
     const endX = obj.endX * canvas.width;
     const endY = obj.endY * canvas.height;
     if (obj.shapeType === "circle") {
-      const radius = Math.sqrt((endX - startX) ** 2 + (endY - startY) ** 2);
+      let radiusX, radiusY;
+      if (obj.radiusX !== undefined && obj.radiusY !== undefined) {
+        radiusX = obj.radiusX * canvas.width;
+        radiusY = obj.radiusY * canvas.height;
+      } else {
+        const radius = Math.sqrt((endX - startX) ** 2 + (endY - startY) ** 2);
+        radiusX = radius;
+        radiusY = radius;
+      }
       return {
-        left: startX - radius,
-        top: startY - radius,
-        right: startX + radius,
-        bottom: startY + radius,
+        left: startX - Math.abs(radiusX),
+        top: startY - Math.abs(radiusY),
+        right: startX + Math.abs(radiusX),
+        bottom: startY + Math.abs(radiusY),
       };
     }
     return {
@@ -208,6 +247,44 @@ function getObjectBounds(obj, canvas) {
       top: y - halfHeight,
       right: x + halfWidth,
       bottom: y + halfHeight,
+    };
+  } else if (obj.type === "measurement") {
+    if (obj.measureType === "distance") {
+      const x1 = obj.startX * canvas.width;
+      const y1 = obj.startY * canvas.height;
+      const x2 = obj.endX * canvas.width;
+      const y2 = obj.endY * canvas.height;
+      return {
+        left: Math.min(x1, x2),
+        top: Math.min(y1, y2),
+        right: Math.max(x1, x2),
+        bottom: Math.max(y1, y2),
+      };
+    } else if (obj.measureType === "area" && obj.points) {
+      let minX = Infinity,
+        minY = Infinity,
+        maxX = -Infinity,
+        maxY = -Infinity;
+      obj.points.forEach((pt) => {
+        const px = pt.x * canvas.width;
+        const py = pt.y * canvas.height;
+        minX = Math.min(minX, px);
+        minY = Math.min(minY, py);
+        maxX = Math.max(maxX, px);
+        maxY = Math.max(maxY, py);
+      });
+      return { left: minX, top: minY, right: maxX, bottom: maxY };
+    }
+  } else if (obj.type === "redaction") {
+    const x = obj.x * canvas.width;
+    const y = obj.y * canvas.height;
+    const width = obj.width * canvas.width;
+    const height = obj.height * canvas.height;
+    return {
+      left: x,
+      top: y,
+      right: x + width,
+      bottom: y + height,
     };
   } else if (obj.points && obj.points.length > 0) {
     // Handle pen strokes and highlights (may not have a type property, or type is "pen"/"highlight")
@@ -327,6 +404,20 @@ function handleSelectStart(e, canvas, pageIndex) {
     canvas.width,
     canvas.height
   );
+  const clickedMeasurement = checkMeasurementClick(
+    pageIndex,
+    p.x,
+    p.y,
+    canvas.width,
+    canvas.height
+  );
+  const clickedRedaction = checkRedactionClick(
+    pageIndex,
+    p.x,
+    p.y,
+    canvas.width,
+    canvas.height
+  );
   const clickedObject =
     clickedText ||
     clickedImage ||
@@ -338,7 +429,9 @@ function handleSelectStart(e, canvas, pageIndex) {
     clickedDateStamp ||
     clickedTextField ||
     clickedComment ||
-    clickedWatermark;
+    clickedWatermark ||
+    clickedMeasurement ||
+    clickedRedaction;
 
   // Multi-select mode
   if (selectedObjects.length > 1) {
@@ -551,7 +644,15 @@ function handleSelectStart(e, canvas, pageIndex) {
     selectedSignature = clickedSignature;
     selectedStroke = clickedPenStroke;
     selectedPageIndex = pageIndex;
-    selectedObjects = [];
+
+    // For newer object types without dedicated selection variables,
+    // use selectedObjects array for single selection too
+    if (clickedCheckbox || clickedDateStamp || clickedTextField || clickedComment || clickedWatermark || clickedMeasurement || clickedRedaction) {
+      selectedObjects = [clickedObject];
+    } else {
+      selectedObjects = [];
+    }
+
     redrawStrokes(
       canvas.getContext("2d"),
       pageIndex,
@@ -862,20 +963,24 @@ function handleSelectMove(e, canvas, pageIndex, state) {
         newH = obj._origH;
 
       if (handle === "br") {
+        // Bottom-right: anchor top-left
         newW = obj._origW + dx;
         newH = newW / aspectRatio;
       } else if (handle === "bl") {
+        // Bottom-left: anchor top-right
         newW = obj._origW - dx;
         newH = newW / aspectRatio;
-        newX = obj._origX + dx;
+        newX = obj._origX + (obj._origW - newW);
       } else if (handle === "tr") {
+        // Top-right: anchor bottom-left
         newW = obj._origW + dx;
         newH = newW / aspectRatio;
-        newY = obj._origY + dy;
+        newY = obj._origY + (obj._origH - newH);
       } else if (handle === "tl") {
+        // Top-left: anchor bottom-right
         newW = obj._origW - dx;
         newH = newW / aspectRatio;
-        newX = obj._origX + dx;
+        newX = obj._origX + (obj._origW - newW);
         newY = obj._origY + (obj._origH - newH);
       } else if (handle === "r") {
         newW = obj._origW + dx;
@@ -938,38 +1043,108 @@ function handleSelectMove(e, canvas, pageIndex, state) {
         obj._origStartY = obj.startY;
         obj._origEndX = obj.endX;
         obj._origEndY = obj.endY;
-      }
-      let newStartX = obj._origStartX,
-        newStartY = obj._origStartY,
-        newEndX = obj._origEndX,
-        newEndY = obj._origEndY;
-
-      if (handle === "br") {
-        newEndX = obj._origEndX + dx;
-        newEndY = obj._origEndY + dy;
-      } else if (handle === "bl") {
-        newStartX = obj._origStartX + dx;
-        newEndY = obj._origEndY + dy;
-      } else if (handle === "tr") {
-        newEndX = obj._origEndX + dx;
-        newStartY = obj._origStartY + dy;
-      } else if (handle === "tl") {
-        newStartX = obj._origStartX + dx;
-        newStartY = obj._origStartY + dy;
-      } else if (handle === "r") {
-        newEndX = obj._origEndX + dx;
-      } else if (handle === "l") {
-        newStartX = obj._origStartX + dx;
-      } else if (handle === "b") {
-        newEndY = obj._origEndY + dy;
-      } else if (handle === "t") {
-        newStartY = obj._origStartY + dy;
+        // Store original radii for circles/ellipses
+        if (obj.shapeType === "circle") {
+          if (obj.radiusX !== undefined && obj.radiusY !== undefined) {
+            // Already has ellipse radii - store in PIXELS for consistent scaling
+            obj._origRadiusXPx = obj.radiusX * canvas.width;
+            obj._origRadiusYPx = obj.radiusY * canvas.height;
+          } else {
+            // Circle defined by center + edge point - compute radius in pixels
+            const radiusPixels = Math.sqrt(
+              (obj.endX * canvas.width - obj.startX * canvas.width) ** 2 +
+              (obj.endY * canvas.height - obj.startY * canvas.height) ** 2
+            );
+            obj._origRadiusXPx = radiusPixels;
+            obj._origRadiusYPx = radiusPixels;
+          }
+        }
       }
 
-      obj.startX = newStartX;
-      obj.startY = newStartY;
-      obj.endX = newEndX;
-      obj.endY = newEndY;
+      if (obj.shapeType === "circle") {
+        // Circle/Ellipse: center stays fixed, work in PIXELS
+        let newRadiusXPx = obj._origRadiusXPx;
+        let newRadiusYPx = obj._origRadiusYPx;
+
+        // Convert dx/dy to pixels
+        const dxPx = dx * canvas.width;
+        const dyPx = dy * canvas.height;
+
+        // Corner handles: uniform scaling (same pixel delta for both)
+        if (handle === "br") {
+          const delta = dxPx; // Use horizontal movement in pixels
+          newRadiusXPx = obj._origRadiusXPx + delta;
+          newRadiusYPx = obj._origRadiusYPx + delta;
+        } else if (handle === "bl") {
+          const delta = -dxPx;
+          newRadiusXPx = obj._origRadiusXPx + delta;
+          newRadiusYPx = obj._origRadiusYPx + delta;
+        } else if (handle === "tr") {
+          const delta = dxPx;
+          newRadiusXPx = obj._origRadiusXPx + delta;
+          newRadiusYPx = obj._origRadiusYPx + delta;
+        } else if (handle === "tl") {
+          const delta = -dxPx;
+          newRadiusXPx = obj._origRadiusXPx + delta;
+          newRadiusYPx = obj._origRadiusYPx + delta;
+        } else if (handle === "r") {
+          // Edge handles scale only one axis (for ellipse)
+          newRadiusXPx = obj._origRadiusXPx + dxPx;
+        } else if (handle === "l") {
+          newRadiusXPx = obj._origRadiusXPx - dxPx;
+        } else if (handle === "b") {
+          newRadiusYPx = obj._origRadiusYPx + dyPx;
+        } else if (handle === "t") {
+          newRadiusYPx = obj._origRadiusYPx - dyPx;
+        }
+
+        // Ensure minimum size (10 pixels)
+        newRadiusXPx = Math.max(10, newRadiusXPx);
+        newRadiusYPx = Math.max(10, newRadiusYPx);
+
+        // Center stays fixed
+        obj.startX = obj._origStartX;
+        obj.startY = obj._origStartY;
+        // Convert back to normalized and store as radiusX/radiusY
+        obj.radiusX = newRadiusXPx / canvas.width;
+        obj.radiusY = newRadiusYPx / canvas.height;
+        // Keep endX/endY for legacy compatibility
+        obj.endX = obj._origStartX + obj.radiusX;
+        obj.endY = obj._origStartY;
+      } else {
+        // Rectangle/line/arrow - keep original behavior
+        let newStartX = obj._origStartX,
+          newStartY = obj._origStartY,
+          newEndX = obj._origEndX,
+          newEndY = obj._origEndY;
+
+        if (handle === "br") {
+          newEndX = obj._origEndX + dx;
+          newEndY = obj._origEndY + dy;
+        } else if (handle === "bl") {
+          newStartX = obj._origStartX + dx;
+          newEndY = obj._origEndY + dy;
+        } else if (handle === "tr") {
+          newEndX = obj._origEndX + dx;
+          newStartY = obj._origStartY + dy;
+        } else if (handle === "tl") {
+          newStartX = obj._origStartX + dx;
+          newStartY = obj._origStartY + dy;
+        } else if (handle === "r") {
+          newEndX = obj._origEndX + dx;
+        } else if (handle === "l") {
+          newStartX = obj._origStartX + dx;
+        } else if (handle === "b") {
+          newEndY = obj._origEndY + dy;
+        } else if (handle === "t") {
+          newStartY = obj._origStartY + dy;
+        }
+
+        obj.startX = newStartX;
+        obj.startY = newStartY;
+        obj.endX = newEndX;
+        obj.endY = newEndY;
+      }
     } else if (obj.points && obj.points.length > 0) {
       // Handle pen strokes (may not have type property)
       if (!obj._origPts) {
@@ -1099,6 +1274,8 @@ function handleSelectStop(canvas, pageIndex, state) {
     delete obj._origStartY;
     delete obj._origEndX;
     delete obj._origEndY;
+    delete obj._origRadiusXPx;
+    delete obj._origRadiusYPx;
     delete obj._origPts;
     delete obj._origMinX;
     delete obj._origMinY;

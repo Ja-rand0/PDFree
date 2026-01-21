@@ -212,6 +212,61 @@ function handleMoveStart(e, canvas, pageIndex) {
     };
   }
 
+  // Check if clicking on redaction
+  const clickedRedaction = checkRedactionClick(
+    pageIndex,
+    p.x,
+    p.y,
+    canvas.width,
+    canvas.height
+  );
+
+  if (clickedRedaction) {
+    return {
+      moving: true,
+      movingObject: clickedRedaction,
+      dragStartPos: p,
+      originalProps: {
+        x: clickedRedaction.x,
+        y: clickedRedaction.y,
+      },
+    };
+  }
+
+  // Check if clicking on measurement
+  const clickedMeasurement = checkMeasurementClick(
+    pageIndex,
+    p.x,
+    p.y,
+    canvas.width,
+    canvas.height
+  );
+
+  if (clickedMeasurement) {
+    if (clickedMeasurement.measureType === "distance") {
+      return {
+        moving: true,
+        movingObject: clickedMeasurement,
+        dragStartPos: p,
+        originalProps: {
+          startX: clickedMeasurement.startX,
+          startY: clickedMeasurement.startY,
+          endX: clickedMeasurement.endX,
+          endY: clickedMeasurement.endY,
+        },
+      };
+    } else if (clickedMeasurement.measureType === "area") {
+      return {
+        moving: true,
+        movingObject: clickedMeasurement,
+        dragStartPos: p,
+        originalProps: {
+          points: clickedMeasurement.points.map((pt) => ({ x: pt.x, y: pt.y })),
+        },
+      };
+    }
+  }
+
   return { moving: false };
 }
 
@@ -242,10 +297,23 @@ function handleMoveMove(e, canvas, pageIndex, state) {
     // Move stamp
     state.movingObject.x = state.originalProps.x + dx;
     state.movingObject.y = state.originalProps.y + dy;
-  } else if (state.movingObject.type === "checkbox" || state.movingObject.type === "datestamp" || state.movingObject.type === "textfield" || state.movingObject.type === "comment" || state.movingObject.type === "watermark") {
-    // Move checkbox, date stamp, text field, comment, or watermark
+  } else if (state.movingObject.type === "checkbox" || state.movingObject.type === "datestamp" || state.movingObject.type === "textfield" || state.movingObject.type === "comment" || state.movingObject.type === "watermark" || state.movingObject.type === "redaction") {
+    // Move checkbox, date stamp, text field, comment, watermark, or redaction
     state.movingObject.x = state.originalProps.x + dx;
     state.movingObject.y = state.originalProps.y + dy;
+  } else if (state.movingObject.type === "measurement") {
+    // Move measurement
+    if (state.movingObject.measureType === "distance") {
+      state.movingObject.startX = state.originalProps.startX + dx;
+      state.movingObject.startY = state.originalProps.startY + dy;
+      state.movingObject.endX = state.originalProps.endX + dx;
+      state.movingObject.endY = state.originalProps.endY + dy;
+    } else if (state.movingObject.measureType === "area") {
+      state.movingObject.points = state.originalProps.points.map((pt) => ({
+        x: pt.x + dx,
+        y: pt.y + dy,
+      }));
+    }
   } else if (state.movingObject.points) {
     // Move pen stroke - update all points
     state.movingObject.points = state.originalProps.points.map((pt) => ({

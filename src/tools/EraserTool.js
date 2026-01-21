@@ -71,8 +71,29 @@ function eraseAtPoint(pageIndex, x, y, radius, canvasWidth, canvasHeight) {
   for (let i = strokes.length - 1; i >= 0; i--) {
     const stroke = strokes[i];
 
-    // Skip text objects (use delete tool for those)
-    if (stroke.type === "text") continue;
+    // Handle text objects - erase entirely when touched
+    if (stroke.type === "text") {
+      const textX = stroke.x * canvasWidth;
+      const textY = stroke.y * canvasHeight;
+      const fontSize = stroke.fontSize * canvasHeight;
+      const textWidth = stroke.width * canvasWidth;
+
+      const left = textX;
+      const right = textX + textWidth;
+      const top = textY - fontSize;
+      const bottom = textY;
+
+      const closestX = Math.max(left, Math.min(x, right));
+      const closestY = Math.max(top, Math.min(y, bottom));
+      const distance = Math.sqrt((x - closestX) ** 2 + (y - closestY) ** 2);
+
+      if (distance <= radius) {
+        const deletedStroke = strokeHistory[pageIndex].splice(i, 1)[0];
+        undoStacks[pageIndex].push({ type: "erase", stroke: deletedStroke });
+        redoStacks[pageIndex].length = 0;
+      }
+      continue;
+    }
 
     // Handle checkboxes - erase entirely when touched
     if (stroke.type === "checkbox") {
@@ -221,6 +242,25 @@ function eraseAtPoint(pageIndex, x, y, radius, canvasWidth, canvasHeight) {
       // Check if eraser touches stamp
       const closestX = Math.max(left, Math.min(x, right));
       const closestY = Math.max(top, Math.min(y, bottom));
+      const distance = Math.sqrt((x - closestX) ** 2 + (y - closestY) ** 2);
+
+      if (distance <= radius) {
+        const deletedStroke = strokeHistory[pageIndex].splice(i, 1)[0];
+        undoStacks[pageIndex].push({ type: "erase", stroke: deletedStroke });
+        redoStacks[pageIndex].length = 0;
+      }
+      continue;
+    }
+
+    // Handle redactions - erase entirely when touched
+    if (stroke.type === "redaction") {
+      const redactX = stroke.x * canvasWidth;
+      const redactY = stroke.y * canvasHeight;
+      const redactWidth = stroke.width * canvasWidth;
+      const redactHeight = stroke.height * canvasHeight;
+
+      const closestX = Math.max(redactX, Math.min(x, redactX + redactWidth));
+      const closestY = Math.max(redactY, Math.min(y, redactY + redactHeight));
       const distance = Math.sqrt((x - closestX) ** 2 + (y - closestY) ** 2);
 
       if (distance <= radius) {

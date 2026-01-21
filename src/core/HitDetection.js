@@ -76,11 +76,19 @@ function checkShapeClick(pageIndex, x, y, canvasWidth, canvasHeight) {
       const hitMargin = 35;
 
       if (stroke.shapeType === "circle") {
-        const radius = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
-        left = x1 - radius;
-        right = x1 + radius;
-        top = y1 - radius;
-        bottom = y1 + radius;
+        let radiusX, radiusY;
+        if (stroke.radiusX !== undefined && stroke.radiusY !== undefined) {
+          radiusX = stroke.radiusX * canvasWidth;
+          radiusY = stroke.radiusY * canvasHeight;
+        } else {
+          const radius = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+          radiusX = radius;
+          radiusY = radius;
+        }
+        left = x1 - Math.abs(radiusX);
+        right = x1 + Math.abs(radiusX);
+        top = y1 - Math.abs(radiusY);
+        bottom = y1 + Math.abs(radiusY);
       } else {
         left = Math.min(x1, x2);
         right = Math.max(x1, x2);
@@ -351,7 +359,8 @@ function checkAnyObjectClick(pageIndex, x, y, canvasWidth, canvasHeight) {
     checkTextFieldClick(pageIndex, x, y, canvasWidth, canvasHeight) ||
     checkCommentClick(pageIndex, x, y, canvasWidth, canvasHeight) ||
     checkWatermarkClick(pageIndex, x, y, canvasWidth, canvasHeight) ||
-    checkMeasurementClick(pageIndex, x, y, canvasWidth, canvasHeight)
+    checkMeasurementClick(pageIndex, x, y, canvasWidth, canvasHeight) ||
+    checkRedactionClick(pageIndex, x, y, canvasWidth, canvasHeight)
   );
 }
 
@@ -408,6 +417,9 @@ function checkAllObjectsAtPoint(pageIndex, x, y, canvasWidth, canvasHeight) {
 
   const measurement = checkMeasurementClick(pageIndex, x, y, canvasWidth, canvasHeight);
   if (measurement) hits.push(measurement);
+
+  const redaction = checkRedactionClick(pageIndex, x, y, canvasWidth, canvasHeight);
+  if (redaction) hits.push(redaction);
 
   return hits;
 }
@@ -473,6 +485,34 @@ function checkMeasurementClick(pageIndex, x, y, canvasWidth, canvasHeight) {
         if (pointInPolygon(x, y, stroke.points, canvasWidth, canvasHeight)) {
           return stroke;
         }
+      }
+    }
+  }
+  return null;
+}
+
+/**
+ * Check if a click hits a redaction object (black bar or white out)
+ */
+function checkRedactionClick(pageIndex, x, y, canvasWidth, canvasHeight) {
+  const strokes = strokeHistory[pageIndex];
+  if (!strokes) return null;
+
+  for (let i = strokes.length - 1; i >= 0; i--) {
+    const stroke = strokes[i];
+    if (stroke.type === "redaction") {
+      const redactX = stroke.x * canvasWidth;
+      const redactY = stroke.y * canvasHeight;
+      const redactWidth = stroke.width * canvasWidth;
+      const redactHeight = stroke.height * canvasHeight;
+
+      if (
+        x >= redactX &&
+        x <= redactX + redactWidth &&
+        y >= redactY &&
+        y <= redactY + redactHeight
+      ) {
+        return stroke;
       }
     }
   }

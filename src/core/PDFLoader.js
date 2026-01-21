@@ -264,8 +264,17 @@ function redrawStrokes(ctx, pageIndex, canvasWidth, canvasHeight) {
         const height = endY - startY;
         ctx.strokeRect(startX, startY, width, height);
       } else if (stroke.shapeType === "circle") {
-        const radius = Math.sqrt((endX - startX) ** 2 + (endY - startY) ** 2);
-        ctx.arc(startX, startY, radius, 0, Math.PI * 2);
+        // Support ellipse with radiusX/radiusY, fallback to legacy radius calculation
+        let radiusX, radiusY;
+        if (stroke.radiusX !== undefined && stroke.radiusY !== undefined) {
+          radiusX = stroke.radiusX * canvasWidth;
+          radiusY = stroke.radiusY * canvasHeight;
+        } else {
+          const radius = Math.sqrt((endX - startX) ** 2 + (endY - startY) ** 2);
+          radiusX = radius;
+          radiusY = radius;
+        }
+        ctx.ellipse(startX, startY, Math.abs(radiusX), Math.abs(radiusY), 0, 0, Math.PI * 2);
         ctx.stroke();
       } else if (stroke.shapeType === "line") {
         ctx.moveTo(startX, startY);
@@ -305,12 +314,20 @@ function redrawStrokes(ctx, pageIndex, canvasWidth, canvasHeight) {
         let left, top, width, height;
 
         if (stroke.shapeType === "circle") {
-          // For circles, calculate bounding box from radius
-          const radius = Math.sqrt((endX - startX) ** 2 + (endY - startY) ** 2);
-          left = startX - radius;
-          top = startY - radius;
-          width = radius * 2;
-          height = radius * 2;
+          // For circles/ellipses, calculate bounding box from radii
+          let radiusX, radiusY;
+          if (stroke.radiusX !== undefined && stroke.radiusY !== undefined) {
+            radiusX = stroke.radiusX * canvasWidth;
+            radiusY = stroke.radiusY * canvasHeight;
+          } else {
+            const radius = Math.sqrt((endX - startX) ** 2 + (endY - startY) ** 2);
+            radiusX = radius;
+            radiusY = radius;
+          }
+          left = startX - Math.abs(radiusX);
+          top = startY - Math.abs(radiusY);
+          width = Math.abs(radiusX) * 2;
+          height = Math.abs(radiusY) * 2;
         } else {
           // For other shapes, use min/max of start and end points
           left = Math.min(startX, endX);
@@ -620,11 +637,19 @@ function redrawStrokes(ctx, pageIndex, canvasWidth, canvasHeight) {
       ctx.lineWidth = 1;
       ctx.strokeRect(x, y, width, height);
 
-      // Draw text inside if present
+      // Draw text inside if present - clip to box bounds
       if (stroke.text) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(x, y, width, height);
+        ctx.clip();
+
         ctx.font = `${fontSize}px Arial`;
         ctx.fillStyle = stroke.color || "#000000";
-        ctx.fillText(stroke.text, x + 5, y + fontSize + 5);
+        // Vertically center the text in the box
+        const textY = y + (height + fontSize * 0.7) / 2;
+        ctx.fillText(stroke.text, x + 5, textY);
+        ctx.restore();
       }
     } else if (stroke.type === "comment") {
       // Draw sticky note icon
@@ -988,12 +1013,20 @@ function redrawStrokes(ctx, pageIndex, canvasWidth, canvasHeight) {
         const endX = obj.endX * canvasWidth;
         const endY = obj.endY * canvasHeight;
         if (obj.shapeType === "circle") {
-          const radius = Math.sqrt((endX - startX) ** 2 + (endY - startY) ** 2);
+          let radiusX, radiusY;
+          if (obj.radiusX !== undefined && obj.radiusY !== undefined) {
+            radiusX = obj.radiusX * canvasWidth;
+            radiusY = obj.radiusY * canvasHeight;
+          } else {
+            const radius = Math.sqrt((endX - startX) ** 2 + (endY - startY) ** 2);
+            radiusX = radius;
+            radiusY = radius;
+          }
           objBounds = {
-            left: startX - radius,
-            top: startY - radius,
-            right: startX + radius,
-            bottom: startY + radius,
+            left: startX - Math.abs(radiusX),
+            top: startY - Math.abs(radiusY),
+            right: startX + Math.abs(radiusX),
+            bottom: startY + Math.abs(radiusY),
           };
         } else {
           objBounds = {
@@ -1073,6 +1106,44 @@ function redrawStrokes(ctx, pageIndex, canvasWidth, canvasHeight) {
           top: y - halfHeight,
           right: x + halfWidth,
           bottom: y + halfHeight,
+        };
+      } else if (obj.type === "measurement") {
+        if (obj.measureType === "distance") {
+          const x1 = obj.startX * canvasWidth;
+          const y1 = obj.startY * canvasHeight;
+          const x2 = obj.endX * canvasWidth;
+          const y2 = obj.endY * canvasHeight;
+          objBounds = {
+            left: Math.min(x1, x2),
+            top: Math.min(y1, y2),
+            right: Math.max(x1, x2),
+            bottom: Math.max(y1, y2),
+          };
+        } else if (obj.measureType === "area" && obj.points) {
+          let pMinX = Infinity,
+            pMinY = Infinity,
+            pMaxX = -Infinity,
+            pMaxY = -Infinity;
+          obj.points.forEach((pt) => {
+            const px = pt.x * canvasWidth;
+            const py = pt.y * canvasHeight;
+            pMinX = Math.min(pMinX, px);
+            pMinY = Math.min(pMinY, py);
+            pMaxX = Math.max(pMaxX, px);
+            pMaxY = Math.max(pMaxY, py);
+          });
+          objBounds = { left: pMinX, top: pMinY, right: pMaxX, bottom: pMaxY };
+        }
+      } else if (obj.type === "redaction") {
+        const x = obj.x * canvasWidth;
+        const y = obj.y * canvasHeight;
+        const width = obj.width * canvasWidth;
+        const height = obj.height * canvasHeight;
+        objBounds = {
+          left: x,
+          top: y,
+          right: x + width,
+          bottom: y + height,
         };
       } else if (obj.points && obj.points.length > 0) {
         // Handle pen strokes (may not have type property)
