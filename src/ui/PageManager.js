@@ -115,6 +115,12 @@ function initPageThumbnails() {
       if (e.defaultPrevented) return;
       navigateToPage(index);
     });
+
+    // Double-click handler - navigate to page
+    thumbnailDiv.addEventListener("dblclick", (e) => {
+      e.preventDefault();
+      navigateToPage(index);
+    });
   });
 }
 
@@ -250,14 +256,47 @@ function reorderPage(fromIndex, toIndex) {
   const wrap = document.getElementById("canvasWrap");
   const pageElements = Array.from(wrap.children);
   const movedElement = pageElements[fromIndex];
+
+  // Remove the element first
   wrap.removeChild(movedElement);
 
-  if (actualToIndex >= pageElements.length - 1) {
+  // Get fresh reference to children after removal
+  const currentElements = Array.from(wrap.children);
+
+  // Insert at the correct position
+  if (actualToIndex >= currentElements.length) {
     wrap.appendChild(movedElement);
   } else {
-    const referenceElement = pageElements[actualToIndex];
-    wrap.insertBefore(movedElement, referenceElement);
+    wrap.insertBefore(movedElement, currentElements[actualToIndex]);
   }
+
+  // CRITICAL: Reattach event listeners with correct indices after reorder
+  // The DOM elements have been reordered, but event listeners still reference old indices
+  // We need to remove old listeners and attach new ones with updated indices
+  const wrap2 = document.getElementById("canvasWrap");
+  const pageContainers = Array.from(wrap2.children);
+
+  pageContainers.forEach((container, newIndex) => {
+    const inkC = container.querySelector(".inkCanvasTouch");
+    if (inkC) {
+      // Clone to remove all old event listeners
+      const newInkC = inkC.cloneNode(true);
+
+      // Copy canvas content
+      const newCtx = newInkC.getContext("2d");
+      newCtx.drawImage(inkC, 0, 0);
+
+      // Replace in DOM
+      inkC.parentNode.replaceChild(newInkC, inkC);
+
+      // Update page reference
+      pages[newIndex].inkC = newInkC;
+      pages[newIndex].ctx = newCtx;
+
+      // Attach listeners with correct index
+      attachCanvasListeners(newInkC, newIndex);
+    }
+  });
 
   // Refresh thumbnails to show new order
   initPageThumbnails();
