@@ -45,6 +45,27 @@ function handleMoveStart(e, canvas, pageIndex) {
     };
   }
 
+  // Check if clicking on signature-image
+  const clickedSignature = checkSignatureClick(
+    pageIndex,
+    p.x,
+    p.y,
+    canvas.width,
+    canvas.height
+  );
+
+  if (clickedSignature) {
+    return {
+      moving: true,
+      movingObject: clickedSignature,
+      dragStartPos: p,
+      originalProps: {
+        x: clickedSignature.x,
+        y: clickedSignature.y,
+      },
+    };
+  }
+
   // Check if clicking on pen stroke
   const clickedStroke = checkStrokeClick(
     pageIndex,
@@ -283,8 +304,8 @@ function handleMoveMove(e, canvas, pageIndex, state) {
     // Move text
     state.movingObject.x = state.originalProps.x + dx;
     state.movingObject.y = state.originalProps.y + dy;
-  } else if (state.movingObject.type === "image") {
-    // Move image
+  } else if (state.movingObject.type === "image" || state.movingObject.type === "signature-image") {
+    // Move image or signature-image
     state.movingObject.x = state.originalProps.x + dx;
     state.movingObject.y = state.originalProps.y + dy;
   } else if (state.movingObject.type === "shape") {

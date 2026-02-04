@@ -561,6 +561,56 @@ function handleSelectStart(e, canvas, pageIndex) {
   }
 
   if (selectedObjects.length > 0) {
+    // Check for resize handle on single selected object in selectedObjects array
+    if (selectedObjects.length === 1) {
+      const singleObj = selectedObjects[0];
+      const bounds = getObjectBounds(singleObj, canvas);
+      if (bounds) {
+        const padding = 10;
+        const boxLeft = bounds.left - padding;
+        const boxTop = bounds.top - padding;
+        const boxWidth = bounds.right - bounds.left + padding * 2;
+        const boxHeight = bounds.bottom - bounds.top + padding * 2;
+
+        // Scale hit area based on object size
+        const minDim = Math.min(boxWidth, boxHeight);
+        const hitArea = Math.min(80, minDim / 3);
+
+        // Check for handle clicks
+        let handle = null;
+        if (Math.abs(p.x - boxLeft) < hitArea && Math.abs(p.y - boxTop) < hitArea)
+          handle = "tl";
+        else if (Math.abs(p.x - (boxLeft + boxWidth)) < hitArea && Math.abs(p.y - boxTop) < hitArea)
+          handle = "tr";
+        else if (Math.abs(p.x - boxLeft) < hitArea && Math.abs(p.y - (boxTop + boxHeight)) < hitArea)
+          handle = "bl";
+        else if (Math.abs(p.x - (boxLeft + boxWidth)) < hitArea && Math.abs(p.y - (boxTop + boxHeight)) < hitArea)
+          handle = "br";
+        else if (Math.abs(p.x - (boxLeft + boxWidth / 2)) < hitArea && Math.abs(p.y - boxTop) < hitArea)
+          handle = "t";
+        else if (Math.abs(p.x - (boxLeft + boxWidth / 2)) < hitArea && Math.abs(p.y - (boxTop + boxHeight)) < hitArea)
+          handle = "b";
+        else if (Math.abs(p.x - boxLeft) < hitArea && Math.abs(p.y - (boxTop + boxHeight / 2)) < hitArea)
+          handle = "l";
+        else if (Math.abs(p.x - (boxLeft + boxWidth)) < hitArea && Math.abs(p.y - (boxTop + boxHeight / 2)) < hitArea)
+          handle = "r";
+
+        if (handle) {
+          return {
+            resizingMultiple: true,
+            resizeHandle: handle,
+            dragStartPos: p,
+            originalBounds: {
+              minX: bounds.left / canvas.width,
+              minY: bounds.top / canvas.height,
+              maxX: bounds.right / canvas.width,
+              maxY: bounds.bottom / canvas.height,
+            },
+          };
+        }
+      }
+    }
+
     if (clickedObject && selectedObjects.includes(clickedObject)) {
       return { mode: "movingMultiple", dragStartPos: p };
     }
@@ -803,7 +853,28 @@ function handleSelectMove(e, canvas, pageIndex, state) {
           obj._origProps = {
             x: obj.x,
             y: obj.y,
+            fontSize: obj.fontSize,
           };
+        } else if (obj.type === "redaction") {
+          obj._origProps = {
+            x: obj.x,
+            y: obj.y,
+            width: obj.width,
+            height: obj.height,
+          };
+        } else if (obj.type === "measurement") {
+          if (obj.measureType === "distance") {
+            obj._origProps = {
+              startX: obj.startX,
+              startY: obj.startY,
+              endX: obj.endX,
+              endY: obj.endY,
+            };
+          } else if (obj.measureType === "area" && obj.points) {
+            obj._origProps = {
+              points: obj.points.map((pt) => ({ x: pt.x, y: pt.y })),
+            };
+          }
         } else if (obj.points && obj.points.length > 0) {
           obj._origProps = {
             points: obj.points.map((pt) => ({ x: pt.x, y: pt.y })),
@@ -866,9 +937,30 @@ function handleSelectMove(e, canvas, pageIndex, state) {
         obj.x = anchorX + (obj._origProps.x - anchorX) * scaleX;
         obj.y = anchorY + (obj._origProps.y - anchorY) * scaleY;
       } else if (obj.type === "watermark") {
-        // Scale watermark position relative to anchor
+        // Scale watermark position and font size relative to anchor
+        const avgScale = (scaleX + scaleY) / 2;
         obj.x = anchorX + (obj._origProps.x - anchorX) * scaleX;
         obj.y = anchorY + (obj._origProps.y - anchorY) * scaleY;
+        obj.fontSize = obj._origProps.fontSize * avgScale;
+      } else if (obj.type === "redaction") {
+        // Scale redaction position and dimensions relative to anchor
+        obj.x = anchorX + (obj._origProps.x - anchorX) * scaleX;
+        obj.y = anchorY + (obj._origProps.y - anchorY) * scaleY;
+        obj.width = obj._origProps.width * scaleX;
+        obj.height = obj._origProps.height * scaleY;
+      } else if (obj.type === "measurement") {
+        // Scale measurement relative to anchor
+        if (obj.measureType === "distance") {
+          obj.startX = anchorX + (obj._origProps.startX - anchorX) * scaleX;
+          obj.startY = anchorY + (obj._origProps.startY - anchorY) * scaleY;
+          obj.endX = anchorX + (obj._origProps.endX - anchorX) * scaleX;
+          obj.endY = anchorY + (obj._origProps.endY - anchorY) * scaleY;
+        } else if (obj.measureType === "area" && obj._origProps.points) {
+          obj.points = obj._origProps.points.map((pt) => ({
+            x: anchorX + (pt.x - anchorX) * scaleX,
+            y: anchorY + (pt.y - anchorY) * scaleY,
+          }));
+        }
       } else if (obj.points && obj.points.length > 0) {
         // Scale pen stroke points relative to anchor
         obj.points = obj._origProps.points.map((pt) => ({
@@ -894,7 +986,10 @@ function handleSelectMove(e, canvas, pageIndex, state) {
         obj.type === "stamp" ||
         obj.type === "checkbox" ||
         obj.type === "datestamp" ||
-        obj.type === "textfield"
+        obj.type === "textfield" ||
+        obj.type === "comment" ||
+        obj.type === "watermark" ||
+        obj.type === "redaction"
       ) {
         if (!obj._origX) obj._origX = obj.x;
         if (!obj._origY) obj._origY = obj.y;
@@ -911,6 +1006,24 @@ function handleSelectMove(e, canvas, pageIndex, state) {
         obj.startY = obj._origStartY + dy;
         obj.endX = obj._origEndX + dx;
         obj.endY = obj._origEndY + dy;
+      } else if (obj.type === "measurement") {
+        // Handle measurement objects
+        if (obj.measureType === "distance") {
+          if (!obj._origStartX) {
+            obj._origStartX = obj.startX;
+            obj._origStartY = obj.startY;
+            obj._origEndX = obj.endX;
+            obj._origEndY = obj.endY;
+          }
+          obj.startX = obj._origStartX + dx;
+          obj.startY = obj._origStartY + dy;
+          obj.endX = obj._origEndX + dx;
+          obj.endY = obj._origEndY + dy;
+        } else if (obj.measureType === "area" && obj.points) {
+          if (!obj._origPts)
+            obj._origPts = obj.points.map((pt) => ({ x: pt.x, y: pt.y }));
+          obj.points = obj._origPts.map((pt) => ({ x: pt.x + dx, y: pt.y + dy }));
+        }
       } else if (obj.points && obj.points.length > 0) {
         // Handle pen strokes (may not have type property)
         if (!obj._origPts)
@@ -933,19 +1046,29 @@ function handleSelectMove(e, canvas, pageIndex, state) {
       if (!obj._origFontSize) {
         obj._origFontSize = obj.fontSize;
         obj._origY = obj.y;
+        obj._origX = obj.x;
       }
+
+      // Calculate font size change based on drag direction
       let newFontSize = obj._origFontSize;
       if (handle.includes("t")) {
         newFontSize = obj._origFontSize - dy;
-        obj.y = obj._origY + dy;
       } else if (handle.includes("b")) {
         newFontSize = obj._origFontSize + dy;
       }
+
+      // Clamp font size
       newFontSize = Math.max(
         8 / canvas.height,
         Math.min(200 / canvas.height, newFontSize)
       );
+
+      // ONLY change fontSize - position stays completely fixed
       obj.fontSize = newFontSize;
+      obj.x = obj._origX;
+      obj.y = obj._origY;
+
+      // Recalculate width based on new font size
       ctx.font = `${newFontSize * canvas.height}px Arial`;
       obj.width = ctx.measureText(obj.text).width / canvas.width;
     } else if (obj.type === "image" || obj.type === "signature-image") {

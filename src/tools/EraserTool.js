@@ -226,6 +226,25 @@ function eraseAtPoint(pageIndex, x, y, radius, canvasWidth, canvasHeight) {
       continue;
     }
 
+    // Handle signature-images - erase entirely when touched
+    if (stroke.type === "signature-image") {
+      const sigX = stroke.x * canvasWidth;
+      const sigY = stroke.y * canvasHeight;
+      const sigWidth = stroke.width * canvasWidth;
+      const sigHeight = stroke.height * canvasHeight;
+
+      const closestX = Math.max(sigX, Math.min(x, sigX + sigWidth));
+      const closestY = Math.max(sigY, Math.min(y, sigY + sigHeight));
+      const distance = Math.sqrt((x - closestX) ** 2 + (y - closestY) ** 2);
+
+      if (distance <= radius) {
+        const deletedStroke = strokeHistory[pageIndex].splice(i, 1)[0];
+        undoStacks[pageIndex].push({ type: "erase", stroke: deletedStroke });
+        redoStacks[pageIndex].length = 0;
+      }
+      continue;
+    }
+
     // Handle stamps - erase entirely when touched
     if (stroke.type === "stamp") {
       const stampX = stroke.x * canvasWidth;

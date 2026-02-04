@@ -62,9 +62,9 @@ function addTextBox(canvas, pageIndex, x, y, existingStroke = null) {
     inputLeft = rect.left + x - 8; // Remove the 8px padding offset
     inputTop = rect.top + y - fontSize - 4; // Position at top of text
   } else {
-    // Creating new text
+    // Creating new text - align left edge of text box with cursor
     fontSize = 16;
-    const boxOffsetX = -100;
+    const boxOffsetX = 0; // Left edge aligns with cursor
     const boxOffsetY = -12;
     inputLeft = rect.left + x + boxOffsetX;
     inputTop = rect.top + y + boxOffsetY;
@@ -109,10 +109,10 @@ function addTextBox(canvas, pageIndex, x, y, existingStroke = null) {
         normalizedY = existingStroke.y;
         normalizedFontSize = existingStroke.fontSize;
       } else {
-        // New text - calculate position with offsets
-        const boxOffsetX = -100;
+        // New text - calculate position (left edge aligned with cursor)
+        const boxOffsetX = 0;
         const boxOffsetY = -12;
-        const textX = x + boxOffsetX + 8;
+        const textX = x + boxOffsetX + 8; // +8 for padding
         const textY = y + boxOffsetY + 20;
         normalizedX = textX / canvas.width;
         normalizedY = textY / canvas.height;
