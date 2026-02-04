@@ -17,23 +17,27 @@
 }
 
 .signature-modal-content {
-    background: white;
-    border-radius: 8px;
-    padding: 24px;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    background: #C0C0C0;
+    border: 2px solid;
+    border-color: #FFFFFF #000000 #000000 #FFFFFF;
+    box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.5);
+    padding: 0;
 }
 
 .signature-modal-title {
-    font-size: 18px;
-    font-weight: 600;
-    margin-bottom: 16px;
+    font-size: 13px;
+    font-weight: bold;
+    color: #FFFFFF;
+    background: linear-gradient(to right, #000080, #1084D0);
+    padding: 4px 8px;
+    margin-bottom: 12px;
 }
 
 .signature-canvas-container {
-    border: 2px solid #d1d5db;
-    border-radius: 8px;
+    border: 2px solid;
+    border-color: #808080 #FFFFFF #FFFFFF #808080;
     overflow: hidden;
-    margin-bottom: 16px;
+    margin: 0 12px 12px 12px;
 }
 
 #signatureCanvas {
@@ -44,44 +48,59 @@
 
 .signature-modal-buttons {
     display: flex;
-    gap: 12px;
+    gap: 8px;
     justify-content: flex-end;
+    padding: 0 12px 12px 12px;
 }
 
 .signature-btn {
-    padding: 8px 16px;
-    border-radius: 6px;
-    border: none;
+    padding: 5px 16px;
+    border: 2px solid;
+    border-color: #FFFFFF #000000 #000000 #FFFFFF;
     cursor: pointer;
-    font-size: 14px;
-    transition: background 0.2s;
+    font-size: 13px;
+    font-family: 'MS Sans Serif', 'Microsoft Sans Serif', sans-serif;
+    transition: none;
+    background: #C0C0C0;
+    color: #000000;
+    font-weight: normal;
+}
+
+.signature-btn:hover {
+    background: #DFDFDF;
+}
+
+.signature-btn:active {
+    border-color: #000000 #FFFFFF #FFFFFF #000000;
+    padding: 6px 15px 4px 17px;
 }
 
 .signature-btn-clear {
-    background: #e5e7eb;
-    color: #1f2937;
-}
-
-.signature-btn-clear:hover {
-    background: #d1d5db;
+    background: #C0C0C0;
+    color: #000000;
 }
 
 .signature-btn-close {
-    background: #6b7280;
-    color: white;
-}
-
-.signature-btn-close:hover {
-    background: #4b5563;
+    background: #C0C0C0;
+    color: #000000;
 }
 
 .signature-btn-done {
-    background: #2563eb;
-    color: white;
+    background: #C0C0C0;
+    color: #000000;
+    font-weight: bold;
+    border: 3px solid;
+    border-color: #FFFFFF #000000 #000000 #FFFFFF;
+    outline: 1px dotted #000000;
+    outline-offset: -6px;
 }
 
 .signature-btn-done:hover {
-    background: #1d4ed8;
+    background: #DFDFDF;
+}
+
+.signature-btn-done:active {
+    padding: 7px 14px 3px 18px;
 }
 
 /* Signature cursor preview */

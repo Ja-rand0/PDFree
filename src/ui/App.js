@@ -23,6 +23,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   // Initialize all controls
   initToolbar();
   initZoomTool();
+  initThemeSwitcher();
 
   // Render the PDF
   await renderPages();

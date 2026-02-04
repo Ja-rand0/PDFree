@@ -5,13 +5,14 @@
     left: 0;
     right: 0;
     z-index: 30;
-    background: #ffffffee;
-    backdrop-filter: blur(4px);
-    border-bottom: 1px solid #e5e7eb;
-    padding: 8px 16px;
+    background: #C0C0C0;
+    border-bottom: 2px solid;
+    border-color: #FFFFFF #C0C0C0 #808080 #C0C0C0;
+    padding: 6px 12px;
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
+    height: 57px;
 }
 
 #toolBar.hidden {
@@ -26,14 +27,14 @@
     height: calc(100vh - 57px);
     max-height: calc(100vh - 57px);
     width: 60px;
-    background: #ffffffee;
-    backdrop-filter: blur(4px);
-    border-right: 1px solid #e5e7eb;
+    background: #C0C0C0;
+    border-right: 2px solid;
+    border-color: #FFFFFF #808080 #808080 #FFFFFF;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 20px 0;
-    gap: 20px;
+    padding: 16px 0;
+    gap: 16px;
     z-index: 40;
     overflow-y: auto;
 }
@@ -46,39 +47,48 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
 }
 
 .sidebar-divider {
     width: 40px;
     height: 2px;
-    background: #e5e7eb;
-    margin: 8px 0;
+    background: #808080;
+    margin: 6px 0;
+    box-shadow: 0 1px 0 #FFFFFF;
 }
 
 /* Tool buttons */
 .tool-btn {
     width: 40px;
     height: 40px;
-    border-radius: 8px;
-    background: #f3f4f6;
+    background: #C0C0C0;
+    border: 2px solid;
+    border-color: #FFFFFF #000000 #000000 #FFFFFF;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 18px;
     font-weight: 600;
-    transition: background 0.2s;
+    transition: none;
     cursor: pointer;
-    border: 2px solid transparent;
 }
 
 .tool-btn:hover {
-    background: #e5e7eb;
+    background: #DFDFDF;
+}
+
+.tool-btn:active {
+    border-color: #000000 #FFFFFF #FFFFFF #000000;
+    padding: 2px 0 0 2px;
 }
 
 .tool-btn.active {
-    background: #dbeafe;
-    border-color: #3b82f6;
+    background: #000080;
+    color: #FFFFFF;
+    border-color: #000080 #87CEEB #87CEEB #000080;
+    outline: 1px dotted #FFFFFF;
+    outline-offset: -4px;
 }
 
 /* Zoom controls */
@@ -86,13 +96,17 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
 }
 
 #zoomTxt {
-    font-size: 12px;
-    font-weight: 600;
-    color: #6b7280;
+    font-size: 11px;
+    font-weight: bold;
+    color: #000000;
     text-align: center;
     min-width: 40px;
+    background: white;
+    border: 2px solid;
+    border-color: #808080 #FFFFFF #FFFFFF #808080;
+    padding: 3px;
 }

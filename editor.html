@@ -11,6 +11,8 @@
   <link rel="stylesheet" href="src/styles/popups.css" />
   <link rel="stylesheet" href="src/styles/components.css" />
   <link rel="stylesheet" href="src/styles/signature.css" />
+  <link rel="stylesheet" href="src/styles/themes/retro95.css" />
+  <link rel="stylesheet" href="src/styles/themes/modern2030.css" />
 </head>
 
 <body>
@@ -163,6 +165,8 @@
     <button id="clearBtn" class="btn btn-gray">Clear all</button>
     <button id="togglePageSidebar" class="btn btn-gray">📄 Pages</button>
     <button id="savePdfBtn" class="btn btn-green">Save PDF</button>
+    <div style="flex: 1;"></div>
+    <button id="themeBtn" class="btn btn-gray">🎨 Style: Retro</button>
   </div>
 
   <!-- PDF Area -->
@@ -185,6 +189,7 @@
   <script src="src/core/EventHandler.js"></script>
   <script src="src/ui/Toolbar.js"></script>
   <script src="src/ui/PageManager.js"></script>
+  <script src="src/ui/ThemeSwitcher.js"></script>
   <script src="src/ui/App.js"></script>
   <script src="src/tools/PenTool.js"></script>
   <script src="src/tools/TextTool.js"></script>

@@ -3,38 +3,354 @@
 
 <head>
   <meta charset="utf-8" />
-  <title>PDF Whiteboard – Home</title>
+  <title>PDFree - Free Open Source PDF Editor</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="src/styles/landing.css" />
+  <link rel="stylesheet" href="src/styles/themes/retro95-landing.css" />
+  <link rel="stylesheet" href="src/styles/themes/modern2030-landing.css" />
 </head>
 
-<body class="h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-  <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
-    <h1 class="text-2xl font-bold mb-4">PDF Whiteboard</h1>
-    <p class="text-sm text-gray-600 mb-4">
-      Upload any PDF and draw freely on each page.
-    </p>
-    <input type="file" id="fileIn" accept="application/pdf"
-      class="mb-4 w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-blue-600 file:text-white hover:file:bg-blue-700" />
-    <div class="text-right">
-      <button id="upBtn" class="bg-green-600 text-white px-4 py-2 rounded">
-        Load PDF
-      </button>
+<body>
+  <!-- Left Ad Banner -->
+  <div class="ad-banner ad-left">
+    <div class="ad-placeholder">
+      <p>📢 Place Ad Here</p>
+      <p class="ad-size">160x600</p>
     </div>
   </div>
+
+  <!-- Right Ad Banner -->
+  <div class="ad-banner ad-right">
+    <div class="ad-placeholder">
+      <p>📢 Place Ad Here</p>
+      <p class="ad-size">160x600</p>
+    </div>
+  </div>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <div class="nav-brand">
+        <span class="brand-icon">📄</span>
+        <span class="brand-name">PDFree</span>
+      </div>
+      <ul class="nav-menu">
+        <li><a href="#home" class="nav-link">Home</a></li>
+        <li><a href="#features" class="nav-link">Features</a></li>
+        <li><a href="#donate" class="nav-link">Donate</a></li>
+        <li><button class="nav-link nav-cta launch-editor-btn">Launch Editor</button></li>
+        <li><button id="themeBtn" class="theme-toggle">🎨 Retro</button></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Hero Section -->
+    <section id="home" class="hero-section">
+      <h1 class="hero-title">Edit PDFs. Freely.</h1>
+      <p class="hero-subtitle">
+        Free, open-source PDF editor. Runs in your browser. Zero tracking. Zero cost.
+      </p>
+      <div class="hero-actions">
+        <button id="uploadBtn" class="btn btn-primary btn-large">Start Editing Now</button>
+        <a href="#features" class="btn btn-secondary">Learn More</a>
+      </div>
+      <input type="file" id="pdfUpload" accept="application/pdf" style="display: none;" />
+
+      <div class="hero-stats">
+        <div class="stat-item">
+          <span class="stat-number">100%</span>
+          <span class="stat-label">Free Forever</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">0</span>
+          <span class="stat-label">Data Collected</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">∞</span>
+          <span class="stat-label">Files Edited</span>
+        </div>
+      </div>
+
+      <!-- Horizontal Ad -->
+      <div class="ad-horizontal">
+        <div class="ad-placeholder">
+          <p>📢 Place Ad Here (728x90)</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Combined Features & Info Section -->
+    <section id="features" class="content-section">
+      <div class="content-grid">
+        <!-- Features Carousel -->
+        <div class="content-card features-card">
+          <h2 class="card-title">✨ Features</h2>
+          <div class="carousel">
+            <div class="carousel-track">
+              <div class="carousel-item active">
+                <div class="feature-icon">✏️</div>
+                <h3>Draw & Annotate</h3>
+                <p>Freehand drawing, highlighting, shapes, arrows, and text annotations.</p>
+              </div>
+              <div class="carousel-item">
+                <div class="feature-icon">📝</div>
+                <h3>Form Filling</h3>
+                <p>Add text fields, checkboxes, date stamps, and signatures to any form.</p>
+              </div>
+              <div class="carousel-item">
+                <div class="feature-icon">🔒</div>
+                <h3>Privacy First</h3>
+                <p>Your files never leave your device. All processing happens locally.</p>
+              </div>
+              <div class="carousel-item">
+                <div class="feature-icon">🖼️</div>
+                <h3>Rich Media</h3>
+                <p>Insert images, watermarks, stamps, and redact sensitive information.</p>
+              </div>
+              <div class="carousel-item">
+                <div class="feature-icon">📏</div>
+                <h3>Measurements</h3>
+                <p>Measure distances and areas with precision. Multiple unit support.</p>
+              </div>
+              <div class="carousel-item">
+                <div class="feature-icon">📄</div>
+                <h3>Page Management</h3>
+                <p>Reorder pages with drag-and-drop. Navigate with thumbnails.</p>
+              </div>
+            </div>
+            <div class="carousel-controls">
+              <button class="carousel-btn prev">‹</button>
+              <span class="carousel-dots"></span>
+              <button class="carousel-btn next">›</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mission Carousel -->
+        <div class="content-card mission-card">
+          <h2 class="card-title">💡 Why PDFree?</h2>
+          <div class="carousel">
+            <div class="carousel-track">
+              <div class="carousel-item active">
+                <h3>The Problem</h3>
+                <p>Every PDF editor wants your money, your data, or both. We believe document editing should be free and private.</p>
+              </div>
+              <div class="carousel-item">
+                <h3>The Solution</h3>
+                <p>PDFree runs entirely in your browser. No accounts, no installations, no hidden costs. Your documents stay on your device.</p>
+              </div>
+              <div class="carousel-item">
+                <h3>Open Source</h3>
+                <p>Transparency matters. Verify our privacy claims, add features, or contribute. The code is open for everyone.</p>
+              </div>
+            </div>
+            <div class="carousel-controls">
+              <button class="carousel-btn prev">‹</button>
+              <span class="carousel-dots"></span>
+              <button class="carousel-btn next">›</button>
+            </div>
+          </div>
+          <div class="tech-tags">
+            <span class="tech-tag">JavaScript</span>
+            <span class="tech-tag">PDF.js</span>
+            <span class="tech-tag">pdf-lib</span>
+            <span class="tech-tag">Open Source</span>
+          </div>
+        </div>
+
+        <!-- How It Works -->
+        <div class="content-card how-card">
+          <h2 class="card-title">⚡ How It Works</h2>
+          <div class="steps">
+            <div class="step">
+              <div class="step-number">1</div>
+              <div class="step-text">
+                <h4>Upload</h4>
+                <p>Select a PDF file</p>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-number">2</div>
+              <div class="step-text">
+                <h4>Edit</h4>
+                <p>Annotate & modify</p>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-number">3</div>
+              <div class="step-text">
+                <h4>Save</h4>
+                <p>Download result</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Square Ad -->
+        <div class="ad-square">
+          <div class="ad-placeholder">
+            <p>📢 Place Ad Here</p>
+            <p class="ad-size">300x250</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Donate Section -->
+    <section id="donate" class="donate-section">
+      <h2 class="section-title">Support PDFree</h2>
+      <p class="donate-text">
+        PDFree is free forever, but hosting and development aren't. Support the project if you find it useful.
+      </p>
+      <div class="donate-grid">
+        <div class="donate-card">
+          <h3>☕ Donate</h3>
+          <p>One-time contributions via PayPal</p>
+          <button class="btn btn-primary">PayPal</button>
+        </div>
+        <div class="donate-card">
+          <h3>💖 Sponsor</h3>
+          <p>Monthly support on GitHub</p>
+          <button class="btn btn-primary">GitHub</button>
+        </div>
+        <div class="donate-card">
+          <h3>⭐ Star</h3>
+          <p>Free but valuable!</p>
+          <button class="btn btn-secondary">Star Repo</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h4>PDFree</h4>
+          <p>Free & open source PDF editor</p>
+          <p class="footer-copyright">© 2025 PDFree. MIT Licensed.</p>
+        </div>
+        <div class="footer-section">
+          <h4>Links</h4>
+          <ul>
+            <li><button class="footer-link launch-editor-btn">Editor</button></li>
+            <li><a href="https://github.com">GitHub</a></li>
+            <li><a href="#donate">Donate</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>Legal</h4>
+          <ul>
+            <li><a href="#">Privacy Policy</a></li>
+            <li><a href="#">Terms of Use</a></li>
+            <li><a href="#">License</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>Community</h4>
+          <ul>
+            <li><a href="#">Report Bug</a></li>
+            <li><a href="#">Request Feature</a></li>
+            <li><a href="#">Contribute</a></li>
+          </ul>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script src="src/ui/ThemeSwitcher.js"></script>
   <script>
-    document.getElementById("upBtn").addEventListener("click", async () => {
-      const file = document.getElementById("fileIn").files[0];
+    // Initialize theme switcher
+    const themes = ['retro95', 'modern2030'];
+    let currentTheme = localStorage.getItem('pdfree-theme') || 'retro95';
+
+    function updateThemeButton() {
+      const btn = document.getElementById('themeBtn');
+      btn.textContent = currentTheme === 'retro95' ? '🎨 Retro' : '🎨 Modern';
+    }
+
+    updateThemeButton();
+
+    document.getElementById('themeBtn').addEventListener('click', () => {
+      const currentIndex = themes.indexOf(currentTheme);
+      currentTheme = themes[(currentIndex + 1) % themes.length];
+      document.documentElement.setAttribute('data-theme', currentTheme);
+      localStorage.setItem('pdfree-theme', currentTheme);
+      updateThemeButton();
+    });
+
+    // PDF Upload functionality
+    const pdfUpload = document.getElementById('pdfUpload');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const launchBtns = document.querySelectorAll('.launch-editor-btn');
+
+    async function handleFileUpload(file) {
       if (!file) return;
-
-      // Read the file as ArrayBuffer and store it
       const arrayBuffer = await file.arrayBuffer();
-      const base64 = btoa(
-        String.fromCharCode(...new Uint8Array(arrayBuffer))
-      );
-      sessionStorage.setItem("pdfData", base64);
+      const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+      sessionStorage.setItem('pdfData', base64);
+      location.href = 'editor.html';
+    }
 
-      location.href = "editor.html";
+    uploadBtn.addEventListener('click', () => pdfUpload.click());
+    launchBtns.forEach(btn => btn.addEventListener('click', () => pdfUpload.click()));
+    pdfUpload.addEventListener('change', async (e) => {
+      if (e.target.files[0]) await handleFileUpload(e.target.files[0]);
+    });
+
+    // Carousel functionality
+    document.querySelectorAll('.carousel').forEach(carousel => {
+      const track = carousel.querySelector('.carousel-track');
+      const items = track.querySelectorAll('.carousel-item');
+      const prevBtn = carousel.querySelector('.prev');
+      const nextBtn = carousel.querySelector('.next');
+      const dotsContainer = carousel.querySelector('.carousel-dots');
+
+      let currentIndex = 0;
+
+      // Create dots
+      items.forEach((_, i) => {
+        const dot = document.createElement('span');
+        dot.className = 'dot' + (i === 0 ? ' active' : '');
+        dot.addEventListener('click', () => goToSlide(i));
+        dotsContainer.appendChild(dot);
+      });
+
+      const dots = dotsContainer.querySelectorAll('.dot');
+
+      function goToSlide(index) {
+        items[currentIndex].classList.remove('active');
+        dots[currentIndex].classList.remove('active');
+        currentIndex = index;
+        items[currentIndex].classList.add('active');
+        dots[currentIndex].classList.add('active');
+      }
+
+      prevBtn.addEventListener('click', () => {
+        goToSlide((currentIndex - 1 + items.length) % items.length);
+      });
+
+      nextBtn.addEventListener('click', () => {
+        goToSlide((currentIndex + 1) % items.length);
+      });
+
+      // Auto-advance every 5 seconds
+      setInterval(() => {
+        goToSlide((currentIndex + 1) % items.length);
+      }, 5000);
+    });
+
+    // Smooth scroll
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        const href = this.getAttribute('href');
+        if (href !== '#') {
+          e.preventDefault();
+          const target = document.querySelector(href);
+          if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
     });
   </script>
 </body>

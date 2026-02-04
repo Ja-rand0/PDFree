@@ -1,0 +1,119 @@
+/* Windows 95 Retro Theme */
+:root[data-theme="retro95"] {
+    --bg-primary: #008080;
+    --bg-secondary: #C0C0C0;
+    --bg-tertiary: #DFDFDF;
+    --text-primary: #000000;
+    --text-secondary: #FFFFFF;
+    --accent-primary: #000080;
+    --accent-secondary: #1084D0;
+    --accent-tertiary: #87CEEB;
+    --border-light: #FFFFFF;
+    --border-dark: #000000;
+    --border-mid: #808080;
+    --font-family: 'MS Sans Serif', 'Microsoft Sans Serif', sans-serif;
+    --border-radius: 0px;
+    --transition-speed: 0s;
+}
+
+/* Apply theme to body */
+[data-theme="retro95"] body {
+    background-color: var(--bg-primary);
+    font-family: var(--font-family);
+}
+
+/* Toolbar */
+[data-theme="retro95"] #toolBar {
+    background: var(--bg-secondary);
+    border-bottom: 2px solid;
+    border-color: var(--border-light) var(--bg-secondary) var(--border-mid) var(--bg-secondary);
+}
+
+/* Sidebar */
+[data-theme="retro95"] #sidebar {
+    background: var(--bg-secondary);
+    border-right: 2px solid;
+    border-color: var(--border-light) var(--border-mid) var(--border-mid) var(--border-light);
+}
+
+/* Tool buttons */
+[data-theme="retro95"] .tool-btn {
+    background: var(--bg-secondary);
+    border: 2px solid;
+    border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
+    border-radius: var(--border-radius);
+    transition: none;
+}
+
+[data-theme="retro95"] .tool-btn:hover {
+    background: var(--bg-tertiary);
+}
+
+[data-theme="retro95"] .tool-btn:active {
+    border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
+    padding: 2px 0 0 2px;
+}
+
+[data-theme="retro95"] .tool-btn.active {
+    background: var(--accent-primary);
+    color: var(--text-secondary);
+    border-color: var(--accent-primary) var(--accent-tertiary) var(--accent-tertiary) var(--accent-primary);
+    outline: 1px dotted var(--border-light);
+    outline-offset: -4px;
+}
+
+/* Buttons */
+[data-theme="retro95"] .btn {
+    background: var(--bg-secondary);
+    border: 2px solid;
+    border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
+    color: var(--text-primary);
+    border-radius: var(--border-radius);
+    transition: none;
+}
+
+[data-theme="retro95"] .btn:hover {
+    background: var(--bg-tertiary);
+}
+
+[data-theme="retro95"] .btn:active {
+    border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
+    padding: 6px 11px 4px 13px;
+}
+
+[data-theme="retro95"] .btn.active {
+    background: var(--accent-primary);
+    color: var(--text-secondary);
+    border-color: var(--accent-primary) var(--accent-tertiary) var(--accent-tertiary) var(--accent-primary);
+}
+
+/* Page canvas */
+[data-theme="retro95"] .pageCanvas {
+    border: 2px solid;
+    border-color: var(--border-light) var(--border-mid) var(--border-mid) var(--border-light);
+    box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.3);
+}
+
+/* Page sidebar */
+[data-theme="retro95"] #pageSidebar {
+    background: var(--bg-secondary);
+    border-left: 2px solid;
+    border-color: var(--border-mid) var(--border-light) var(--border-light) var(--border-mid);
+}
+
+/* Popups */
+[data-theme="retro95"] #shapePopup,
+[data-theme="retro95"] #stampPopup,
+[data-theme="retro95"] #redactionPopup,
+[data-theme="retro95"] #measurementPopup {
+    background: var(--bg-secondary);
+    border: 2px solid;
+    border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
+    box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.4);
+    border-radius: var(--border-radius);
+}
+
+[data-theme="retro95"] .popup-title {
+    background: linear-gradient(to right, var(--accent-primary), var(--accent-secondary));
+    color: var(--text-secondary);
+}

@@ -1,6 +1,24 @@
 // Toolbar actions and tool switching
 
 function initToolbar() {
+  // Helper to deactivate all tool buttons
+  function deactivateAllTools() {
+    const toolButtons = [
+      "selectTool", "moveTool", "penTool", "textTool", "deleteTool",
+      "eraserTool", "highlightTool", "imageTool", "shapeTool",
+      "signatureTool", "stampTool", "redactionTool", "checkboxTool",
+      "dateStampTool", "textFieldTool", "commentTool", "watermarkTool",
+      "measurementTool"
+    ];
+
+    toolButtons.forEach(toolId => {
+      const btn = document.getElementById(toolId);
+      if (btn) {
+        btn.classList.remove("active");
+      }
+    });
+  }
+
   // Helper to remove image cursor from all canvases
   function removeImageCursor() {
     pages.forEach((p) => {
@@ -22,13 +40,9 @@ function initToolbar() {
   document.getElementById("selectTool").addEventListener("click", () => {
     console.log("Switching to select tool");
     currentTool = "select";
+    deactivateAllTools();
     removeImageCursor();
     document.getElementById("selectTool").classList.add("active");
-    document.getElementById("moveTool").classList.remove("active");
-    document.getElementById("penTool").classList.remove("active");
-    document.getElementById("textTool").classList.remove("active");
-    document.getElementById("deleteTool").classList.remove("active");
-    document.getElementById("eraserTool").classList.remove("active");
     document.getElementById("shapeSelector").classList.add("hidden");
     document.getElementById("signatureSelector").classList.add("hidden");
     document.getElementById("stampSelector").classList.add("hidden");
@@ -41,15 +55,11 @@ function initToolbar() {
   document.getElementById("moveTool").addEventListener("click", () => {
     console.log("Switching to move tool");
     currentTool = "move";
+    deactivateAllTools();
     removeImageCursor();
     selectedText = null;
     selectedPageIndex = null;
     document.getElementById("moveTool").classList.add("active");
-    document.getElementById("selectTool").classList.remove("active");
-    document.getElementById("penTool").classList.remove("active");
-    document.getElementById("textTool").classList.remove("active");
-    document.getElementById("deleteTool").classList.remove("active");
-    document.getElementById("eraserTool").classList.remove("active");
     document.getElementById("shapeSelector").classList.add("hidden");
     document.getElementById("signatureSelector").classList.add("hidden");
     document.getElementById("stampSelector").classList.add("hidden");
@@ -62,12 +72,11 @@ function initToolbar() {
   document.getElementById("penTool").addEventListener("click", () => {
     console.log("Switching to pen tool");
     currentTool = "pen";
+    deactivateAllTools();
     removeImageCursor();
     selectedText = null;
     selectedPageIndex = null;
     document.getElementById("penTool").classList.add("active");
-    document.getElementById("textTool").classList.remove("active");
-    document.getElementById("selectTool").classList.remove("active");
     document.getElementById("shapeSelector").classList.add("hidden");
     document.getElementById("signatureSelector").classList.add("hidden");
     document.getElementById("stampSelector").classList.add("hidden");
@@ -80,14 +89,11 @@ function initToolbar() {
   document.getElementById("textTool").addEventListener("click", () => {
     console.log("Switching to text tool");
     currentTool = "text";
+    deactivateAllTools();
     removeImageCursor();
     selectedText = null;
     selectedPageIndex = null;
     document.getElementById("textTool").classList.add("active");
-    document.getElementById("penTool").classList.remove("active");
-    document.getElementById("selectTool").classList.remove("active");
-    document.getElementById("deleteTool").classList.remove("active");
-    document.getElementById("eraserTool").classList.remove("active");
     document.getElementById("shapeSelector").classList.add("hidden");
     document.getElementById("signatureSelector").classList.add("hidden");
     document.getElementById("stampSelector").classList.add("hidden");
@@ -100,14 +106,11 @@ function initToolbar() {
   document.getElementById("deleteTool").addEventListener("click", () => {
     console.log("Switching to delete tool");
     currentTool = "delete";
+    deactivateAllTools();
     removeImageCursor();
     selectedText = null;
     selectedPageIndex = null;
     document.getElementById("deleteTool").classList.add("active");
-    document.getElementById("penTool").classList.remove("active");
-    document.getElementById("textTool").classList.remove("active");
-    document.getElementById("selectTool").classList.remove("active");
-    document.getElementById("eraserTool").classList.remove("active");
     document.getElementById("shapeSelector").classList.add("hidden");
     document.getElementById("signatureSelector").classList.add("hidden");
     document.getElementById("stampSelector").classList.add("hidden");
@@ -120,16 +123,11 @@ function initToolbar() {
   document.getElementById("eraserTool").addEventListener("click", () => {
     console.log("Switching to eraser tool");
     currentTool = "eraser";
+    deactivateAllTools();
     removeImageCursor();
     selectedText = null;
     selectedPageIndex = null;
     document.getElementById("eraserTool").classList.add("active");
-    document.getElementById("penTool").classList.remove("active");
-    document.getElementById("textTool").classList.remove("active");
-    document.getElementById("selectTool").classList.remove("active");
-    document.getElementById("moveTool").classList.remove("active");
-    document.getElementById("deleteTool").classList.remove("active");
-    document.getElementById("highlightTool").classList.remove("active");
     document.getElementById("shapeSelector").classList.add("hidden");
     document.getElementById("signatureSelector").classList.add("hidden");
     document.getElementById("stampSelector").classList.add("hidden");
@@ -142,17 +140,11 @@ function initToolbar() {
   document.getElementById("highlightTool").addEventListener("click", () => {
     console.log("Switching to highlight tool");
     currentTool = "highlight";
+    deactivateAllTools();
     removeImageCursor();
     selectedText = null;
     selectedPageIndex = null;
     document.getElementById("highlightTool").classList.add("active");
-    document.getElementById("penTool").classList.remove("active");
-    document.getElementById("textTool").classList.remove("active");
-    document.getElementById("selectTool").classList.remove("active");
-    document.getElementById("moveTool").classList.remove("active");
-    document.getElementById("deleteTool").classList.remove("active");
-    document.getElementById("eraserTool").classList.remove("active");
-    document.getElementById("imageTool").classList.remove("active");
     document.getElementById("shapeSelector").classList.add("hidden");
     document.getElementById("signatureSelector").classList.add("hidden");
     document.getElementById("stampSelector").classList.add("hidden");
@@ -165,16 +157,10 @@ function initToolbar() {
   document.getElementById("imageTool").addEventListener("click", () => {
     console.log("Switching to image tool");
     currentTool = "image";
+    deactivateAllTools();
     selectedText = null;
     selectedPageIndex = null;
     document.getElementById("imageTool").classList.add("active");
-    document.getElementById("penTool").classList.remove("active");
-    document.getElementById("textTool").classList.remove("active");
-    document.getElementById("selectTool").classList.remove("active");
-    document.getElementById("moveTool").classList.remove("active");
-    document.getElementById("deleteTool").classList.remove("active");
-    document.getElementById("eraserTool").classList.remove("active");
-    document.getElementById("highlightTool").classList.remove("active");
 
     // Add image cursor to all canvases
     pages.forEach((p) => {
@@ -327,21 +313,14 @@ function initToolbar() {
   document.getElementById("shapeTool").addEventListener("click", (e) => {
     console.log("Switching to shape tool");
     currentTool = "shape";
+    deactivateAllTools();
+    removeImageCursor();
     document.getElementById("shapeTool").classList.add("active");
-    document.getElementById("selectTool").classList.remove("active");
-    document.getElementById("moveTool").classList.remove("active");
-    document.getElementById("penTool").classList.remove("active");
-    document.getElementById("textTool").classList.remove("active");
-    document.getElementById("deleteTool").classList.remove("active");
-    document.getElementById("eraserTool").classList.remove("active");
-    document.getElementById("highlightTool").classList.remove("active");
-    document.getElementById("imageTool").classList.remove("active");
-    document.getElementById("signatureTool").classList.remove("active");
-    document.getElementById("stampTool").classList.remove("active");
 
     // Hide old inline selectors
     document.getElementById("shapeSelector").classList.add("hidden");
     document.getElementById("stampSelector").classList.add("hidden");
+    document.getElementById("measurementUnitSelector").classList.add("hidden");
 
     pages.forEach((p, i) =>
       redrawStrokes(p.ctx, i, p.inkC.width, p.inkC.height)
@@ -351,22 +330,14 @@ function initToolbar() {
   document.getElementById("signatureTool").addEventListener("click", () => {
     console.log("Switching to signature tool");
     currentTool = "signature";
+    deactivateAllTools();
     removeImageCursor();
     document.getElementById("signatureTool").classList.add("active");
-    document.getElementById("selectTool").classList.remove("active");
-    document.getElementById("moveTool").classList.remove("active");
-    document.getElementById("penTool").classList.remove("active");
-    document.getElementById("textTool").classList.remove("active");
-    document.getElementById("deleteTool").classList.remove("active");
-    document.getElementById("eraserTool").classList.remove("active");
-    document.getElementById("highlightTool").classList.remove("active");
-    document.getElementById("imageTool").classList.remove("active");
-    document.getElementById("shapeTool").classList.remove("active");
-    document.getElementById("stampTool").classList.remove("active");
 
     // Hide all selectors
     document.getElementById("shapeSelector").classList.add("hidden");
     document.getElementById("stampSelector").classList.add("hidden");
+    document.getElementById("measurementUnitSelector").classList.add("hidden");
 
     pages.forEach((p, i) =>
       redrawStrokes(p.ctx, i, p.inkC.width, p.inkC.height)
@@ -408,21 +379,14 @@ function initToolbar() {
   document.getElementById("stampTool").addEventListener("click", (e) => {
     console.log("Switching to stamp tool");
     currentTool = "stamp";
+    deactivateAllTools();
+    removeImageCursor();
     document.getElementById("stampTool").classList.add("active");
-    document.getElementById("selectTool").classList.remove("active");
-    document.getElementById("moveTool").classList.remove("active");
-    document.getElementById("penTool").classList.remove("active");
-    document.getElementById("textTool").classList.remove("active");
-    document.getElementById("deleteTool").classList.remove("active");
-    document.getElementById("eraserTool").classList.remove("active");
-    document.getElementById("highlightTool").classList.remove("active");
-    document.getElementById("imageTool").classList.remove("active");
-    document.getElementById("shapeTool").classList.remove("active");
-    document.getElementById("signatureTool").classList.remove("active");
 
     // Hide old inline selectors
     document.getElementById("shapeSelector").classList.add("hidden");
     document.getElementById("stampSelector").classList.add("hidden");
+    document.getElementById("measurementUnitSelector").classList.add("hidden");
 
     pages.forEach((p, i) =>
       redrawStrokes(p.ctx, i, p.inkC.width, p.inkC.height)
@@ -509,21 +473,13 @@ function initToolbar() {
   // Redaction tool click handler
   document.getElementById("redactionTool").addEventListener("click", (e) => {
     currentTool = "redaction";
+    deactivateAllTools();
+    removeImageCursor();
     document.getElementById("redactionTool").classList.add("active");
-    document.getElementById("selectTool").classList.remove("active");
-    document.getElementById("moveTool").classList.remove("active");
-    document.getElementById("penTool").classList.remove("active");
-    document.getElementById("textTool").classList.remove("active");
-    document.getElementById("deleteTool").classList.remove("active");
-    document.getElementById("eraserTool").classList.remove("active");
-    document.getElementById("highlightTool").classList.remove("active");
-    document.getElementById("imageTool").classList.remove("active");
-    document.getElementById("shapeTool").classList.remove("active");
-    document.getElementById("signatureTool").classList.remove("active");
-    document.getElementById("stampTool").classList.remove("active");
 
     document.getElementById("shapeSelector").classList.add("hidden");
     document.getElementById("stampSelector").classList.add("hidden");
+    document.getElementById("measurementUnitSelector").classList.add("hidden");
 
     pages.forEach((p, i) =>
       redrawStrokes(p.ctx, i, p.inkC.width, p.inkC.height)
@@ -541,24 +497,15 @@ function initToolbar() {
   });
 
   // Checkbox tool click handler
-  document.getElementById("checkboxTool").addEventListener("click", (e) => {
+  document.getElementById("checkboxTool").addEventListener("click", () => {
     currentTool = "checkbox";
+    deactivateAllTools();
+    removeImageCursor();
     document.getElementById("checkboxTool").classList.add("active");
-    document.getElementById("selectTool").classList.remove("active");
-    document.getElementById("moveTool").classList.remove("active");
-    document.getElementById("penTool").classList.remove("active");
-    document.getElementById("textTool").classList.remove("active");
-    document.getElementById("deleteTool").classList.remove("active");
-    document.getElementById("eraserTool").classList.remove("active");
-    document.getElementById("highlightTool").classList.remove("active");
-    document.getElementById("imageTool").classList.remove("active");
-    document.getElementById("shapeTool").classList.remove("active");
-    document.getElementById("signatureTool").classList.remove("active");
-    document.getElementById("stampTool").classList.remove("active");
-    document.getElementById("redactionTool").classList.remove("active");
 
     document.getElementById("shapeSelector").classList.add("hidden");
     document.getElementById("stampSelector").classList.add("hidden");
+    document.getElementById("measurementUnitSelector").classList.add("hidden");
 
     pages.forEach((p, i) =>
       redrawStrokes(p.ctx, i, p.inkC.width, p.inkC.height)
@@ -568,24 +515,13 @@ function initToolbar() {
   // Date stamp tool click handler
   document.getElementById("dateStampTool").addEventListener("click", () => {
     currentTool = "datestamp";
+    deactivateAllTools();
+    removeImageCursor();
     document.getElementById("dateStampTool").classList.add("active");
-    document.getElementById("selectTool").classList.remove("active");
-    document.getElementById("moveTool").classList.remove("active");
-    document.getElementById("penTool").classList.remove("active");
-    document.getElementById("textTool").classList.remove("active");
-    document.getElementById("deleteTool").classList.remove("active");
-    document.getElementById("eraserTool").classList.remove("active");
-    document.getElementById("highlightTool").classList.remove("active");
-    document.getElementById("imageTool").classList.remove("active");
-    document.getElementById("shapeTool").classList.remove("active");
-    document.getElementById("signatureTool").classList.remove("active");
-    document.getElementById("stampTool").classList.remove("active");
-    document.getElementById("redactionTool").classList.remove("active");
-    document.getElementById("checkboxTool").classList.remove("active");
-    document.getElementById("textFieldTool").classList.remove("active");
 
     document.getElementById("shapeSelector").classList.add("hidden");
     document.getElementById("stampSelector").classList.add("hidden");
+    document.getElementById("measurementUnitSelector").classList.add("hidden");
 
     pages.forEach((p, i) =>
       redrawStrokes(p.ctx, i, p.inkC.width, p.inkC.height)
@@ -594,24 +530,13 @@ function initToolbar() {
 
   document.getElementById("textFieldTool").addEventListener("click", () => {
     currentTool = "textfield";
+    deactivateAllTools();
+    removeImageCursor();
     document.getElementById("textFieldTool").classList.add("active");
-    document.getElementById("selectTool").classList.remove("active");
-    document.getElementById("moveTool").classList.remove("active");
-    document.getElementById("penTool").classList.remove("active");
-    document.getElementById("textTool").classList.remove("active");
-    document.getElementById("deleteTool").classList.remove("active");
-    document.getElementById("eraserTool").classList.remove("active");
-    document.getElementById("highlightTool").classList.remove("active");
-    document.getElementById("imageTool").classList.remove("active");
-    document.getElementById("shapeTool").classList.remove("active");
-    document.getElementById("signatureTool").classList.remove("active");
-    document.getElementById("stampTool").classList.remove("active");
-    document.getElementById("redactionTool").classList.remove("active");
-    document.getElementById("checkboxTool").classList.remove("active");
-    document.getElementById("dateStampTool").classList.remove("active");
 
     document.getElementById("shapeSelector").classList.add("hidden");
     document.getElementById("stampSelector").classList.add("hidden");
+    document.getElementById("measurementUnitSelector").classList.add("hidden");
 
     pages.forEach((p, i) =>
       redrawStrokes(p.ctx, i, p.inkC.width, p.inkC.height)
@@ -620,26 +545,13 @@ function initToolbar() {
 
   document.getElementById("commentTool").addEventListener("click", () => {
     currentTool = "comment";
+    deactivateAllTools();
+    removeImageCursor();
     document.getElementById("commentTool").classList.add("active");
-    document.getElementById("selectTool").classList.remove("active");
-    document.getElementById("moveTool").classList.remove("active");
-    document.getElementById("penTool").classList.remove("active");
-    document.getElementById("textTool").classList.remove("active");
-    document.getElementById("deleteTool").classList.remove("active");
-    document.getElementById("eraserTool").classList.remove("active");
-    document.getElementById("highlightTool").classList.remove("active");
-    document.getElementById("imageTool").classList.remove("active");
-    document.getElementById("shapeTool").classList.remove("active");
-    document.getElementById("signatureTool").classList.remove("active");
-    document.getElementById("stampTool").classList.remove("active");
-    document.getElementById("redactionTool").classList.remove("active");
-    document.getElementById("checkboxTool").classList.remove("active");
-    document.getElementById("dateStampTool").classList.remove("active");
-    document.getElementById("textFieldTool").classList.remove("active");
-    document.getElementById("watermarkTool").classList.remove("active");
 
     document.getElementById("shapeSelector").classList.add("hidden");
     document.getElementById("stampSelector").classList.add("hidden");
+    document.getElementById("measurementUnitSelector").classList.add("hidden");
 
     pages.forEach((p, i) =>
       redrawStrokes(p.ctx, i, p.inkC.width, p.inkC.height)
@@ -648,26 +560,13 @@ function initToolbar() {
 
   document.getElementById("watermarkTool").addEventListener("click", () => {
     currentTool = "watermark";
+    deactivateAllTools();
+    removeImageCursor();
     document.getElementById("watermarkTool").classList.add("active");
-    document.getElementById("selectTool").classList.remove("active");
-    document.getElementById("moveTool").classList.remove("active");
-    document.getElementById("penTool").classList.remove("active");
-    document.getElementById("textTool").classList.remove("active");
-    document.getElementById("deleteTool").classList.remove("active");
-    document.getElementById("eraserTool").classList.remove("active");
-    document.getElementById("highlightTool").classList.remove("active");
-    document.getElementById("imageTool").classList.remove("active");
-    document.getElementById("shapeTool").classList.remove("active");
-    document.getElementById("signatureTool").classList.remove("active");
-    document.getElementById("stampTool").classList.remove("active");
-    document.getElementById("redactionTool").classList.remove("active");
-    document.getElementById("checkboxTool").classList.remove("active");
-    document.getElementById("dateStampTool").classList.remove("active");
-    document.getElementById("textFieldTool").classList.remove("active");
-    document.getElementById("commentTool").classList.remove("active");
 
     document.getElementById("shapeSelector").classList.add("hidden");
     document.getElementById("stampSelector").classList.add("hidden");
+    document.getElementById("measurementUnitSelector").classList.add("hidden");
 
     pages.forEach((p, i) =>
       redrawStrokes(p.ctx, i, p.inkC.width, p.inkC.height)
@@ -707,24 +606,9 @@ function initToolbar() {
   document.getElementById("measurementTool").addEventListener("click", () => {
     currentTool = "measurement";
     setMeasurementMode("distance");
+    deactivateAllTools();
+    removeImageCursor();
     document.getElementById("measurementTool").classList.add("active");
-    document.getElementById("selectTool").classList.remove("active");
-    document.getElementById("moveTool").classList.remove("active");
-    document.getElementById("penTool").classList.remove("active");
-    document.getElementById("textTool").classList.remove("active");
-    document.getElementById("deleteTool").classList.remove("active");
-    document.getElementById("eraserTool").classList.remove("active");
-    document.getElementById("highlightTool").classList.remove("active");
-    document.getElementById("imageTool").classList.remove("active");
-    document.getElementById("shapeTool").classList.remove("active");
-    document.getElementById("signatureTool").classList.remove("active");
-    document.getElementById("stampTool").classList.remove("active");
-    document.getElementById("redactionTool").classList.remove("active");
-    document.getElementById("checkboxTool").classList.remove("active");
-    document.getElementById("dateStampTool").classList.remove("active");
-    document.getElementById("textFieldTool").classList.remove("active");
-    document.getElementById("commentTool").classList.remove("active");
-    document.getElementById("watermarkTool").classList.remove("active");
 
     document.getElementById("shapeSelector").classList.add("hidden");
     document.getElementById("stampSelector").classList.add("hidden");
