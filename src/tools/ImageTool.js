@@ -65,7 +65,6 @@ function handleImageClick(e, canvas, pageIndex) {
           canvas.height
         );
 
-        console.log("Image placed on PDF at center of cursor");
       };
       img.src = readerEvent.target.result;
     };

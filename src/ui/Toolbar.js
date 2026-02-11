@@ -38,14 +38,10 @@ function initToolbar() {
 
   // Tool switching
   document.getElementById("selectTool").addEventListener("click", () => {
-    console.log("Switching to select tool");
     currentTool = "select";
     deactivateAllTools();
     removeImageCursor();
     document.getElementById("selectTool").classList.add("active");
-    document.getElementById("shapeSelector").classList.add("hidden");
-    document.getElementById("signatureSelector").classList.add("hidden");
-    document.getElementById("stampSelector").classList.add("hidden");
     document.getElementById("measurementUnitSelector").classList.add("hidden");
     pages.forEach((p, i) =>
       redrawStrokes(p.ctx, i, p.inkC.width, p.inkC.height)
@@ -53,16 +49,12 @@ function initToolbar() {
   });
 
   document.getElementById("moveTool").addEventListener("click", () => {
-    console.log("Switching to move tool");
     currentTool = "move";
     deactivateAllTools();
     removeImageCursor();
     selectedText = null;
     selectedPageIndex = null;
     document.getElementById("moveTool").classList.add("active");
-    document.getElementById("shapeSelector").classList.add("hidden");
-    document.getElementById("signatureSelector").classList.add("hidden");
-    document.getElementById("stampSelector").classList.add("hidden");
     document.getElementById("measurementUnitSelector").classList.add("hidden");
     pages.forEach((p, i) =>
       redrawStrokes(p.ctx, i, p.inkC.width, p.inkC.height)
@@ -70,16 +62,12 @@ function initToolbar() {
   });
 
   document.getElementById("penTool").addEventListener("click", () => {
-    console.log("Switching to pen tool");
     currentTool = "pen";
     deactivateAllTools();
     removeImageCursor();
     selectedText = null;
     selectedPageIndex = null;
     document.getElementById("penTool").classList.add("active");
-    document.getElementById("shapeSelector").classList.add("hidden");
-    document.getElementById("signatureSelector").classList.add("hidden");
-    document.getElementById("stampSelector").classList.add("hidden");
     document.getElementById("measurementUnitSelector").classList.add("hidden");
     pages.forEach((p, i) =>
       redrawStrokes(p.ctx, i, p.inkC.width, p.inkC.height)
@@ -87,16 +75,12 @@ function initToolbar() {
   });
 
   document.getElementById("textTool").addEventListener("click", () => {
-    console.log("Switching to text tool");
     currentTool = "text";
     deactivateAllTools();
     removeImageCursor();
     selectedText = null;
     selectedPageIndex = null;
     document.getElementById("textTool").classList.add("active");
-    document.getElementById("shapeSelector").classList.add("hidden");
-    document.getElementById("signatureSelector").classList.add("hidden");
-    document.getElementById("stampSelector").classList.add("hidden");
     document.getElementById("measurementUnitSelector").classList.add("hidden");
     pages.forEach((p, i) =>
       redrawStrokes(p.ctx, i, p.inkC.width, p.inkC.height)
@@ -104,16 +88,12 @@ function initToolbar() {
   });
 
   document.getElementById("deleteTool").addEventListener("click", () => {
-    console.log("Switching to delete tool");
     currentTool = "delete";
     deactivateAllTools();
     removeImageCursor();
     selectedText = null;
     selectedPageIndex = null;
     document.getElementById("deleteTool").classList.add("active");
-    document.getElementById("shapeSelector").classList.add("hidden");
-    document.getElementById("signatureSelector").classList.add("hidden");
-    document.getElementById("stampSelector").classList.add("hidden");
     document.getElementById("measurementUnitSelector").classList.add("hidden");
     pages.forEach((p, i) =>
       redrawStrokes(p.ctx, i, p.inkC.width, p.inkC.height)
@@ -121,16 +101,12 @@ function initToolbar() {
   });
 
   document.getElementById("eraserTool").addEventListener("click", () => {
-    console.log("Switching to eraser tool");
     currentTool = "eraser";
     deactivateAllTools();
     removeImageCursor();
     selectedText = null;
     selectedPageIndex = null;
     document.getElementById("eraserTool").classList.add("active");
-    document.getElementById("shapeSelector").classList.add("hidden");
-    document.getElementById("signatureSelector").classList.add("hidden");
-    document.getElementById("stampSelector").classList.add("hidden");
     document.getElementById("measurementUnitSelector").classList.add("hidden");
     pages.forEach((p, i) =>
       redrawStrokes(p.ctx, i, p.inkC.width, p.inkC.height)
@@ -138,16 +114,12 @@ function initToolbar() {
   });
 
   document.getElementById("highlightTool").addEventListener("click", () => {
-    console.log("Switching to highlight tool");
     currentTool = "highlight";
     deactivateAllTools();
     removeImageCursor();
     selectedText = null;
     selectedPageIndex = null;
     document.getElementById("highlightTool").classList.add("active");
-    document.getElementById("shapeSelector").classList.add("hidden");
-    document.getElementById("signatureSelector").classList.add("hidden");
-    document.getElementById("stampSelector").classList.add("hidden");
     document.getElementById("measurementUnitSelector").classList.add("hidden");
     pages.forEach((p, i) =>
       redrawStrokes(p.ctx, i, p.inkC.width, p.inkC.height)
@@ -155,7 +127,6 @@ function initToolbar() {
   });
 
   document.getElementById("imageTool").addEventListener("click", () => {
-    console.log("Switching to image tool");
     currentTool = "image";
     deactivateAllTools();
     selectedText = null;
@@ -167,9 +138,6 @@ function initToolbar() {
       p.inkC.classList.add("image-cursor");
     });
 
-    document.getElementById("shapeSelector").classList.add("hidden");
-    document.getElementById("signatureSelector").classList.add("hidden");
-    document.getElementById("stampSelector").classList.add("hidden");
     document.getElementById("measurementUnitSelector").classList.add("hidden");
     pages.forEach((p, i) =>
       redrawStrokes(p.ctx, i, p.inkC.width, p.inkC.height)
@@ -204,9 +172,6 @@ function initToolbar() {
 
   // Undo/Redo/Clear
   document.getElementById("undoBtn").addEventListener("click", () => {
-    document.getElementById("shapeSelector").classList.add("hidden");
-    document.getElementById("signatureSelector").classList.add("hidden");
-    document.getElementById("stampSelector").classList.add("hidden");
     document.getElementById("measurementUnitSelector").classList.add("hidden");
     pages.forEach((p, i) => {
       if (undoStacks[i].length === 0) return;
@@ -225,9 +190,6 @@ function initToolbar() {
   });
 
   document.getElementById("redoBtn").addEventListener("click", () => {
-    document.getElementById("shapeSelector").classList.add("hidden");
-    document.getElementById("signatureSelector").classList.add("hidden");
-    document.getElementById("stampSelector").classList.add("hidden");
     document.getElementById("measurementUnitSelector").classList.add("hidden");
     pages.forEach((p, i) => {
       if (redoStacks[i].length === 0) return;
@@ -241,9 +203,6 @@ function initToolbar() {
   });
 
   document.getElementById("clearBtn").addEventListener("click", () => {
-    document.getElementById("shapeSelector").classList.add("hidden");
-    document.getElementById("signatureSelector").classList.add("hidden");
-    document.getElementById("stampSelector").classList.add("hidden");
     document.getElementById("measurementUnitSelector").classList.add("hidden");
     pages.forEach((p, i) => {
       const currentStrokes = [...strokeHistory[i]];
@@ -258,7 +217,6 @@ function initToolbar() {
 
   // Save PDF button
   document.getElementById("savePdfBtn").addEventListener("click", () => {
-    console.log("Save PDF button clicked");
     savePDF();
   });
 
@@ -267,24 +225,8 @@ function initToolbar() {
     const shapePopup = document.getElementById("shapePopup");
     const shapeTool = document.getElementById("shapeTool");
     const rect = shapeTool.getBoundingClientRect();
-    console.log("Shape tool hovered - rect:", rect);
     shapePopup.style.top = `${rect.top}px`;
-    console.log("Popup top set to:", shapePopup.style.top);
     shapePopup.classList.remove("hidden");
-    console.log("Popup classList:", shapePopup.classList.toString());
-    console.log(
-      "Computed display:",
-      window.getComputedStyle(shapePopup).display
-    );
-    console.log(
-      "Computed visibility:",
-      window.getComputedStyle(shapePopup).visibility
-    );
-    console.log("Popup offsetWidth:", shapePopup.offsetWidth);
-    console.log(
-      "Popup getBoundingClientRect:",
-      shapePopup.getBoundingClientRect()
-    );
   });
 
   document.getElementById("shapeTool").addEventListener("mouseleave", (e) => {
@@ -311,15 +253,12 @@ function initToolbar() {
 
   // Shape tool click handler - just activates the tool
   document.getElementById("shapeTool").addEventListener("click", (e) => {
-    console.log("Switching to shape tool");
     currentTool = "shape";
     deactivateAllTools();
     removeImageCursor();
     document.getElementById("shapeTool").classList.add("active");
 
     // Hide old inline selectors
-    document.getElementById("shapeSelector").classList.add("hidden");
-    document.getElementById("stampSelector").classList.add("hidden");
     document.getElementById("measurementUnitSelector").classList.add("hidden");
 
     pages.forEach((p, i) =>
@@ -328,15 +267,12 @@ function initToolbar() {
   });
 
   document.getElementById("signatureTool").addEventListener("click", () => {
-    console.log("Switching to signature tool");
     currentTool = "signature";
     deactivateAllTools();
     removeImageCursor();
     document.getElementById("signatureTool").classList.add("active");
 
     // Hide all selectors
-    document.getElementById("shapeSelector").classList.add("hidden");
-    document.getElementById("stampSelector").classList.add("hidden");
     document.getElementById("measurementUnitSelector").classList.add("hidden");
 
     pages.forEach((p, i) =>
@@ -377,15 +313,12 @@ function initToolbar() {
 
   // Stamp tool click handler - just activates the tool
   document.getElementById("stampTool").addEventListener("click", (e) => {
-    console.log("Switching to stamp tool");
     currentTool = "stamp";
     deactivateAllTools();
     removeImageCursor();
     document.getElementById("stampTool").classList.add("active");
 
     // Hide old inline selectors
-    document.getElementById("shapeSelector").classList.add("hidden");
-    document.getElementById("stampSelector").classList.add("hidden");
     document.getElementById("measurementUnitSelector").classList.add("hidden");
 
     pages.forEach((p, i) =>
@@ -411,13 +344,6 @@ function initToolbar() {
     document.getElementById("shapePopup").classList.add("hidden");
   });
 
-  // Signature mode selectors
-  document.getElementById("drawSignature").addEventListener("click", () => {
-    setSignatureMode("draw");
-  });
-  document.getElementById("uploadSignature").addEventListener("click", () => {
-    setSignatureMode("upload");
-  });
 
   // Stamp selectors
   document.getElementById("stampApproved").addEventListener("click", () => {
@@ -477,8 +403,6 @@ function initToolbar() {
     removeImageCursor();
     document.getElementById("redactionTool").classList.add("active");
 
-    document.getElementById("shapeSelector").classList.add("hidden");
-    document.getElementById("stampSelector").classList.add("hidden");
     document.getElementById("measurementUnitSelector").classList.add("hidden");
 
     pages.forEach((p, i) =>
@@ -503,8 +427,6 @@ function initToolbar() {
     removeImageCursor();
     document.getElementById("checkboxTool").classList.add("active");
 
-    document.getElementById("shapeSelector").classList.add("hidden");
-    document.getElementById("stampSelector").classList.add("hidden");
     document.getElementById("measurementUnitSelector").classList.add("hidden");
 
     pages.forEach((p, i) =>
@@ -519,8 +441,6 @@ function initToolbar() {
     removeImageCursor();
     document.getElementById("dateStampTool").classList.add("active");
 
-    document.getElementById("shapeSelector").classList.add("hidden");
-    document.getElementById("stampSelector").classList.add("hidden");
     document.getElementById("measurementUnitSelector").classList.add("hidden");
 
     pages.forEach((p, i) =>
@@ -534,8 +454,6 @@ function initToolbar() {
     removeImageCursor();
     document.getElementById("textFieldTool").classList.add("active");
 
-    document.getElementById("shapeSelector").classList.add("hidden");
-    document.getElementById("stampSelector").classList.add("hidden");
     document.getElementById("measurementUnitSelector").classList.add("hidden");
 
     pages.forEach((p, i) =>
@@ -549,8 +467,6 @@ function initToolbar() {
     removeImageCursor();
     document.getElementById("commentTool").classList.add("active");
 
-    document.getElementById("shapeSelector").classList.add("hidden");
-    document.getElementById("stampSelector").classList.add("hidden");
     document.getElementById("measurementUnitSelector").classList.add("hidden");
 
     pages.forEach((p, i) =>
@@ -564,8 +480,6 @@ function initToolbar() {
     removeImageCursor();
     document.getElementById("watermarkTool").classList.add("active");
 
-    document.getElementById("shapeSelector").classList.add("hidden");
-    document.getElementById("stampSelector").classList.add("hidden");
     document.getElementById("measurementUnitSelector").classList.add("hidden");
 
     pages.forEach((p, i) =>
@@ -610,8 +524,6 @@ function initToolbar() {
     removeImageCursor();
     document.getElementById("measurementTool").classList.add("active");
 
-    document.getElementById("shapeSelector").classList.add("hidden");
-    document.getElementById("stampSelector").classList.add("hidden");
     document.getElementById("measurementUnitSelector").classList.remove("hidden");
 
     pages.forEach((p, i) =>
@@ -623,30 +535,10 @@ function initToolbar() {
   document.getElementById("measurementDistance").addEventListener("click", () => {
     currentTool = "measurement";
     setMeasurementMode("distance");
+    deactivateAllTools();
     document.getElementById("measurementPopup").classList.add("hidden");
     document.getElementById("measurementTool").classList.add("active");
-    document.getElementById("selectTool").classList.remove("active");
-    document.getElementById("moveTool").classList.remove("active");
-    document.getElementById("penTool").classList.remove("active");
-    document.getElementById("textTool").classList.remove("active");
-    document.getElementById("deleteTool").classList.remove("active");
-    document.getElementById("eraserTool").classList.remove("active");
-    document.getElementById("highlightTool").classList.remove("active");
-    document.getElementById("imageTool").classList.remove("active");
-    document.getElementById("shapeTool").classList.remove("active");
-    document.getElementById("signatureTool").classList.remove("active");
-    document.getElementById("stampTool").classList.remove("active");
-    document.getElementById("redactionTool").classList.remove("active");
-    document.getElementById("checkboxTool").classList.remove("active");
-    document.getElementById("dateStampTool").classList.remove("active");
-    document.getElementById("textFieldTool").classList.remove("active");
-    document.getElementById("commentTool").classList.remove("active");
-    document.getElementById("watermarkTool").classList.remove("active");
-
-    document.getElementById("shapeSelector").classList.add("hidden");
-    document.getElementById("stampSelector").classList.add("hidden");
     document.getElementById("measurementUnitSelector").classList.remove("hidden");
-
     pages.forEach((p, i) =>
       redrawStrokes(p.ctx, i, p.inkC.width, p.inkC.height)
     );
@@ -655,30 +547,10 @@ function initToolbar() {
   document.getElementById("measurementArea").addEventListener("click", () => {
     currentTool = "measurement";
     setMeasurementMode("area");
+    deactivateAllTools();
     document.getElementById("measurementPopup").classList.add("hidden");
     document.getElementById("measurementTool").classList.add("active");
-    document.getElementById("selectTool").classList.remove("active");
-    document.getElementById("moveTool").classList.remove("active");
-    document.getElementById("penTool").classList.remove("active");
-    document.getElementById("textTool").classList.remove("active");
-    document.getElementById("deleteTool").classList.remove("active");
-    document.getElementById("eraserTool").classList.remove("active");
-    document.getElementById("highlightTool").classList.remove("active");
-    document.getElementById("imageTool").classList.remove("active");
-    document.getElementById("shapeTool").classList.remove("active");
-    document.getElementById("signatureTool").classList.remove("active");
-    document.getElementById("stampTool").classList.remove("active");
-    document.getElementById("redactionTool").classList.remove("active");
-    document.getElementById("checkboxTool").classList.remove("active");
-    document.getElementById("dateStampTool").classList.remove("active");
-    document.getElementById("textFieldTool").classList.remove("active");
-    document.getElementById("commentTool").classList.remove("active");
-    document.getElementById("watermarkTool").classList.remove("active");
-
-    document.getElementById("shapeSelector").classList.add("hidden");
-    document.getElementById("stampSelector").classList.add("hidden");
     document.getElementById("measurementUnitSelector").classList.remove("hidden");
-
     pages.forEach((p, i) =>
       redrawStrokes(p.ctx, i, p.inkC.width, p.inkC.height)
     );

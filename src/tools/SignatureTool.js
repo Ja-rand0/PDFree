@@ -174,7 +174,6 @@ function saveSignature() {
   // Show cursor preview
   showCursorPreview();
 
-  console.log("Signature saved with", signaturePoints.length, "strokes");
 }
 
 function showCursorPreview() {
@@ -305,7 +304,6 @@ function handleSignatureClick(e, canvas, pageIndex) {
     canvas.height
   );
 
-  console.log("Placed signature as single image object");
 }
 
 // When signature tool is deactivated, hide preview

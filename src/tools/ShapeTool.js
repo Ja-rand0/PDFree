@@ -7,7 +7,6 @@ let shapePreviewCanvas = null;
 
 function setShape(shape) {
   currentShape = shape;
-  console.log("Shape set to:", shape);
 }
 
 function handleShapeStart(e, canvas, pageIndex) {

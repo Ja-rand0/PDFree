@@ -1,16 +1,13 @@
 // Zoom control functionality
 
 function applyZoom() {
-  console.log("applyZoom called with zoom:", zoom);
   document.getElementById("zoomTxt").textContent = Math.round(zoom * 100) + "%";
   renderPages();
 }
 
 function initZoomTool() {
-  console.log("initZoomTool called");
   const zoomOutBtn = document.getElementById("zoomOutBtn");
   const zoomInBtn = document.getElementById("zoomInBtn");
-  console.log("Zoom buttons found:", zoomOutBtn, zoomInBtn);
 
   if (!zoomOutBtn || !zoomInBtn) {
     console.error("Zoom buttons not found in DOM!");
@@ -18,7 +15,6 @@ function initZoomTool() {
   }
 
   zoomOutBtn.addEventListener("click", function () {
-    console.log("Zoom out clicked, current zoom:", zoom);
 
     let newZoom = zoom - 0.1;
     if (newZoom < minZoom) newZoom = minZoom;
@@ -27,7 +23,6 @@ function initZoomTool() {
       pendingZoom = newZoom;
       document.getElementById("zoomTxt").textContent =
         Math.round(newZoom * 100) + "%";
-      console.log("Queued zoom:", newZoom);
     } else {
       zoom = newZoom;
       applyZoom();
@@ -35,7 +30,6 @@ function initZoomTool() {
   });
 
   zoomInBtn.addEventListener("click", function () {
-    console.log("Zoom in clicked, current zoom:", zoom);
 
     let newZoom;
     if (zoom === 0.25) {
@@ -50,12 +44,10 @@ function initZoomTool() {
       pendingZoom = newZoom;
       document.getElementById("zoomTxt").textContent =
         Math.round(newZoom * 100) + "%";
-      console.log("Queued zoom:", newZoom);
     } else {
       zoom = newZoom;
       applyZoom();
     }
   });
 
-  console.log("Zoom controls initialized successfully");
 }

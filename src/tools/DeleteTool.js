@@ -32,7 +32,6 @@ function handleDeleteClick(e, canvas, pageIndex) {
         canvas.width,
         canvas.height
       );
-      console.log("Deleted text object");
     }
     return;
   }
@@ -66,7 +65,6 @@ function handleDeleteClick(e, canvas, pageIndex) {
         canvas.width,
         canvas.height
       );
-      console.log("Deleted image object");
     }
     return;
   }
@@ -98,7 +96,6 @@ function handleDeleteClick(e, canvas, pageIndex) {
         canvas.width,
         canvas.height
       );
-      console.log("Deleted signature");
     }
     return;
   }
@@ -126,7 +123,6 @@ function handleDeleteClick(e, canvas, pageIndex) {
         canvas.width,
         canvas.height
       );
-      console.log("Deleted pen stroke");
     }
     return;
   }
@@ -158,7 +154,6 @@ function handleDeleteClick(e, canvas, pageIndex) {
         canvas.width,
         canvas.height
       );
-      console.log("Deleted shape");
     }
     return;
   }
@@ -190,7 +185,6 @@ function handleDeleteClick(e, canvas, pageIndex) {
         canvas.width,
         canvas.height
       );
-      console.log("Deleted stamp");
     }
     return;
   }

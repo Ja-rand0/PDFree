@@ -2,7 +2,7 @@
 
 // Apply theme immediately on load to avoid FOUC
 (function() {
-  const savedTheme = localStorage.getItem('pdfree-theme') || 'retro95';
+  const savedTheme = localStorage.getItem('pdfree-theme') || 'modern2030';
   document.documentElement.setAttribute('data-theme', savedTheme);
 })();
 
@@ -10,7 +10,7 @@ function initThemeSwitcher() {
   const themes = ['retro95', 'modern2030'];
 
   // Load saved theme or default to retro95
-  let currentTheme = localStorage.getItem('pdfree-theme') || 'retro95';
+  let currentTheme = localStorage.getItem('pdfree-theme') || 'modern2030';
   applyTheme(currentTheme);
 
   // Theme switcher button click

@@ -16,13 +16,11 @@ const measurementUnits = {
 function setMeasurementMode(mode) {
   measurementMode = mode;
   measurementPoints = [];
-  console.log(`Measurement mode set to: ${mode}`);
 }
 
 function setMeasurementUnit(unit) {
   if (measurementUnits[unit]) {
     measurementUnit = unit;
-    console.log(`Measurement unit set to: ${unit}`);
   }
 }
 
@@ -217,7 +215,6 @@ function handleAreaMeasureClick(e, canvas, pageIndex) {
 
 function handleAreaMeasureComplete(canvas, pageIndex) {
   if (measurementPoints.length < 3) {
-    console.log("Need at least 3 points for area measurement");
     measurementPoints = [];
     return;
   }

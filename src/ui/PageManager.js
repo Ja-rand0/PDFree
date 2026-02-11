@@ -233,7 +233,6 @@ function togglePageSidebar() {
 function reorderPage(fromIndex, toIndex) {
   if (fromIndex === toIndex || toIndex < 0 || toIndex > pages.length) return;
 
-  console.log(`Reordering page from ${fromIndex} to ${toIndex}`);
 
   // Reorder pages array
   const movedPage = pages.splice(fromIndex, 1)[0];

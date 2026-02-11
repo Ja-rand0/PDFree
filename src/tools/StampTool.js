@@ -18,7 +18,6 @@ let currentStamp = "approved";
 function setStamp(stampName) {
   if (stamps[stampName]) {
     currentStamp = stampName;
-    console.log("Stamp set to:", stampName);
   }
 }
 
@@ -68,5 +67,4 @@ function handleStampClick(e, canvas, pageIndex) {
     canvas.height
   );
 
-  console.log(`Placed ${currentStamp} stamp`);
 }

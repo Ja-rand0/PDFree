@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="utf-8" />
-  <title>PDF Whiteboard – View & Draw</title>
+  <title>PDFree - Editor</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <link rel="stylesheet" href="src/styles/base.css" />
@@ -30,13 +30,13 @@
       <button id="imageTool" class="tool-btn" title="Insert Image">🖼️</button>
       <button id="shapeTool" class="tool-btn" title="Shapes">⬟</button>
       <button id="signatureTool" class="tool-btn" title="Signature">✍️</button>
-      <button id="stampTool" class="tool-btn" title="Stamps">🏷️</button>
+      <button id="stampTool" class="tool-btn" title="Stamps">🏵️</button>
       <button id="redactionTool" class="tool-btn" title="Redaction">▬</button>
       <button id="checkboxTool" class="tool-btn" title="Checkbox">☑</button>
       <button id="dateStampTool" class="tool-btn" title="Date Stamp">📅</button>
       <button id="textFieldTool" class="tool-btn" title="Text Field">📝</button>
       <button id="commentTool" class="tool-btn" title="Comment">💬</button>
-      <button id="watermarkTool" class="tool-btn" title="Watermark">🏷️</button>
+      <button id="watermarkTool" class="tool-btn" title="Watermark">©️</button>
       <button id="measurementTool" class="tool-btn" title="Measurement">📏</button>
     </div>
 
@@ -123,29 +123,6 @@
     <button id="homeBtn" class="btn btn-gray">← Home</button>
     <input type="file" id="switchFile" accept="application/pdf" />
     <button id="switchBtn" class="btn btn-primary">Switch Document</button>
-
-    <!-- Shape selector -->
-    <div id="shapeSelector" class="hidden toolbar-selector">
-      <button id="rectangleShape" class="btn btn-gray">Rectangle</button>
-      <button id="circleShape" class="btn btn-gray">Circle</button>
-      <button id="lineShape" class="btn btn-gray">Line</button>
-      <button id="arrowShape" class="btn btn-gray">Arrow</button>
-    </div>
-
-    <!-- Signature mode selector -->
-    <div id="signatureSelector" class="hidden toolbar-selector">
-      <button id="drawSignature" class="btn btn-gray">Draw</button>
-      <button id="uploadSignature" class="btn btn-gray">Upload</button>
-    </div>
-
-    <!-- Stamp selector -->
-    <div id="stampSelector" class="hidden toolbar-selector overflow">
-      <button id="stampApproved" class="btn btn-green">APPROVED</button>
-      <button id="stampRejected" class="btn btn-red">REJECTED</button>
-      <button id="stampConfidential" class="btn btn-red">CONFIDENTIAL</button>
-      <button id="stampDraft" class="btn btn-gray">DRAFT</button>
-      <button id="stampUrgent" class="btn btn-orange">URGENT</button>
-    </div>
 
     <!-- Measurement unit selector -->
     <div id="measurementUnitSelector" class="hidden toolbar-selector">

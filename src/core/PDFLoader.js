@@ -18,13 +18,11 @@ async function loadFile(url) {
 
 async function renderPages() {
   if (isRendering) {
-    console.log("Already rendering, will process pending zoom after...");
     return;
   }
 
   isRendering = true;
   pendingZoom = null;
-  console.log("renderPages called, zoom:", zoom);
 
   try {
     const wrap = document.getElementById("canvasWrap");
@@ -44,7 +42,6 @@ async function renderPages() {
 
     const data = bytes;
     const pdf = await pdfjsLib.getDocument({ data }).promise;
-    console.log("PDF loaded, numPages:", pdf.numPages);
 
     for (let i = 0; i < pdf.numPages; i++) {
       const pdfPage = await pdf.getPage(i + 1);
@@ -91,12 +88,10 @@ async function renderPages() {
       attachCanvasListeners(inkC, i);
     }
 
-    console.log("renderPages complete, pages:", pages.length);
   } finally {
     isRendering = false;
 
     if (pendingZoom !== null) {
-      console.log("Processing pending zoom:", pendingZoom);
       zoom = pendingZoom;
       applyZoom();
     }

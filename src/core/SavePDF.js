@@ -6,7 +6,6 @@ async function savePDF() {
     return;
   }
 
-  console.log("Starting PDF save...");
 
   try {
     // Load the original PDF with pdf-lib
@@ -58,7 +57,6 @@ async function savePDF() {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 
-    console.log("PDF saved successfully!");
   } catch (error) {
     console.error("Error saving PDF:", error);
     alert("Error saving PDF: " + error.message);
